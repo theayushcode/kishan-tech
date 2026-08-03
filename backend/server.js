@@ -1,82 +1,98 @@
 const express = require('express');
 const mysql = require('mysql2');
+const bcrypt = require('bcryptjs');
 const cors = require('cors');
+const bodyParser = require('body-parser');
 
 const app = express();
+const PORT = 5000; // register.js me port 5000 requested hai
 
 // Middlewares
 app.use(cors());
-app.use(express.json());
+app.use(bodyParser.json());
 
-// MySQL Connection
+// MySQL Connection Setup
 const db = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',      // Apne MySQL ka username daalein (default: root)
-  password: 'AYUSH@123',      // Apne MySQL ka password daalein (XAMPP mein default khali hota hai)
-  database: 'kishan_tech'
+    host: 'localhost',
+    user: 'root',      // Apna MySQL username daalein (default 'root')
+    password: 'AYUSH@123',      // Apna MySQL password daalein
+    database: 'kishan_tech'
 });
 
 db.connect((err) => {
-  if (err) {
-    console.error('MySQL Connection Error:', err);
-  } else {
-    console.log('Connected to MySQL Database!');
-  }
-});
-
-// Login API Endpoint
-app.post('/api/login', (req, res) => {
-  const { email, password } = req.body;
-
-  const sql = 'SELECT * FROM users WHERE email = ? AND password = ?';
-  db.query(sql, [email, password], (err, results) => {
     if (err) {
-      return res.status(500).json({ success: false, message: 'Server Error' });
-    }
-
-    if (results.length > 0) {
-      res.json({ success: true, message: 'Login Successful' });
+        console.error('❌ Database connection failed:', err);
     } else {
-      res.status(401).json({ success: false, message: 'Invalid Email or Password' });
+        console.log('✅ Connected to MySQL Database!');
     }
-  });
 });
-// ==========================================
-// NEW: Register API Endpoint (Naya Account Create Karne Ke Liye)
-// ==========================================
-app.post('/api/register', (req, res) => {
-  const { name, email, password } = req.body;
 
-  if (!name || !email || !password) {
-    return res.status(400).json({ success: false, message: 'Sabhi fields bharna zaroori hai!' });
-  }
+// ==========================================
+// 1. REGISTER API (Create New Account)
+// ==========================================
+app.post('/api/register', async (req, res) => {
+    const { name, email, password } = req.body;
 
-  // Pehle check karein ki Email pehle se register toh nahi hai
-  const checkSql = 'SELECT * FROM users WHERE email = ?';
-  db.query(checkSql, [email], (err, results) => {
-    if (err) {
-      return res.status(500).json({ success: false, message: 'Server Error' });
+    if (!name || !email || !password) {
+        return res.status(400).json({ success: false, message: 'Please fill all fields.' });
     }
 
-    if (results.length > 0) {
-      return res.status(400).json({ success: false, message: 'Ye Email pehle se registered hai!' });
+    try {
+        // Check karein ki email pehle se exists karta hai ya nahi
+        db.query('SELECT email FROM users WHERE email = ?', [email], async (err, results) => {
+            if (err) return res.status(500).json({ success: false, message: 'Database error.' });
+
+            if (results.length > 0) {
+                return res.status(400).json({ success: false, message: 'Email is already registered!' });
+            }
+
+            // Password Hash karein (Security ke liye)
+            const hashedPassword = await bcrypt.hash(password, 10);
+
+            // Database me user Save karein
+            const insertQuery = 'INSERT INTO users (name, email, password) VALUES (?, ?, ?)';
+            db.query(insertQuery, [name, email, hashedPassword], (err, result) => {
+                if (err) {
+                    console.error('❌ Real MySQL Error:', err.message);
+                    return res.status(500).json({ success: false, message: 'Failed to register user.' });
+                }
+                return res.status(200).json({ success: true, message: 'Account created successfully!' });
+            });
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Server error.' });
     }
+});
 
-    // Naya user Insert karein
-    const insertSql = 'INSERT INTO users (name, email, password) VALUES (?, ?, ?)';
-    db.query(insertSql, [name, email, password], (err, result) => {
-      if (err) {
-        return res.status(500).json({ success: false, message: 'User create karne mein dikkat aayi!' });
-      }
+// ==========================================
+// 2. LOGIN API (Sign In)
+// ==========================================
+app.post('/api/login', (req, res) => {
+    const { email, password } = req.body;
 
-      res.json({ success: true, message: 'Account successful create ho gaya!' });
+    db.query('SELECT * FROM users WHERE email = ?', [email], async (err, results) => {
+        if (err) return res.status(500).json({ success: false, message: 'Database error.' });
+
+        if (results.length === 0) {
+            return res.status(400).json({ success: false, message: 'User not found or invalid email.' });
+        }
+
+        const user = results[0];
+        const isMatch = await bcrypt.compare(password, user.password);
+
+        if (isMatch) {
+            return res.status(200).json({ 
+                success: true, 
+                message: 'Login successful!',
+                user: { name: user.name, email: user.email }
+            });
+        } else {
+            return res.status(400).json({ success: false, message: 'Incorrect password.' });
+        }
     });
-  });
 });
 
 // Server Start
-const PORT = process.env.PORT || 5000;
-
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
 });

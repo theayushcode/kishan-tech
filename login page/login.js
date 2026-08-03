@@ -82,7 +82,7 @@ form.addEventListener('submit', (e) => {
   submitBtn.querySelector('.btn-label').textContent = 'Signing in…';
 
   // Fetch API call to Node.js + MySQL Server
-  fetch('http://localhost:3000/api/login', {
+  fetch('http://localhost:5000/api/login', {
     method: 'POST',
     headers: { 
       'Content-Type': 'application/json' 
