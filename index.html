@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Kishan - Tech · Season-wise Indian Crop Guide</title>
   <script>
-  // Agar user logged-in nahi hai toh login page par bhejo
-  if (!localStorage.getItem('isLoggedIn')) {
-    window.location.href = 'login page/login.html';
-  }
-</script>
+    // Agar user logged-in nahi hai toh login page par bhejo
+    if (!localStorage.getItem('isLoggedIn')) {
+      window.location.href = 'login page/login.html';
+    }
+  </script>
   <meta name="description" content="Kishan - Tech — explore 150 crops grown across Summer, Winter and Rain (monsoon) seasons in India with images, descriptions, rainfall needs and growing regions." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -17,7 +17,7 @@
   <link rel="stylesheet" href="style.css" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌾</text></svg>" />
   <style>
-    /* Login link — self-contained so it doesn't require editing style.css */
+    /* Header login link styling */
     .header-login-link{
       margin-left: 1rem;
       padding: .5rem 1.1rem;
@@ -36,7 +36,6 @@
 <body>
   <div id="app">
 
-    <!-- ============ BACKGROUND MUSIC PLAYER ============ -->
     <div class="music-player" id="music-player">
       <button class="music-btn playing" id="music-toggle" title="Play / Pause music">
         <span class="music-icon">🎵</span>
@@ -47,7 +46,6 @@
       <source src="assets/audio/music.mp3" type="audio/mpeg">
     </audio>
 
-    <!-- ============ LOADER ============ -->
     <div class="loader" id="loader">
       <div>
         <div class="spin"></div>
@@ -55,7 +53,6 @@
       </div>
     </div>
 
-        <!-- ============ BRAND / NAV BAR ============ -->
     <header class="brand-bar">
       <div class="brand" id="home-btn" title="Go to home">
         <span class="logo">🌾</span>
@@ -63,6 +60,7 @@
       </div>
       <nav class="top-nav" id="top-nav">
         <button class="nav-link active" data-nav="welcome">Home</button>
+        <button class="nav-link" data-nav="recommend">🌱 Smart Finder</button>
         <button class="nav-link" data-nav="season">Seasons</button>
         <button class="nav-link" data-nav="agri">Festivals</button>
         <button class="nav-link" data-nav="india-map">India Map</button>
@@ -71,28 +69,26 @@
         <span id="crumb-current" class="current">Home</span>
       </div>
       <div class="user-profile-wrapper" id="userProfileWrapper">
-  <button class="user-profile-btn" id="userProfileBtn">
-    <img src="" alt="User" id="userAvatar" class="user-avatar" style="display:none;" />
-    <span id="userInitial" class="user-initial">U</span>
-    <span id="userName" class="user-name">User</span>
-    <span class="arrow">▾</span>
-  </button>
-  <div class="user-dropdown" id="userDropdown">
-    <div class="user-info">
-      <p id="dropdownName" class="user-info-name">User Name</p>
-      <p id="dropdownEmail" class="user-info-email">user@example.com</p>
-    </div>
-    <hr />
-    <button id="logoutBtn" class="logout-btn">🚪 Sign Out</button>
-  </div>
-</div>
+        <button class="user-profile-btn" id="userProfileBtn">
+          <img src="" alt="User" id="userAvatar" class="user-avatar" style="display:none;" />
+          <span id="userInitial" class="user-initial">U</span>
+          <span id="userName" class="user-name">User</span>
+          <span class="arrow">▾</span>
+        </button>
+        <div class="user-dropdown" id="userDropdown">
+          <div class="user-info">
+            <p id="dropdownName" class="user-info-name">User Name</p>
+            <p id="dropdownEmail" class="user-info-email">user@example.com</p>
+          </div>
+          <hr />
+          <button id="logoutBtn" class="logout-btn">🚪 Sign Out</button>
+        </div>
+      </div>
       <a href="login page/login.html" class="header-login-link">Login</a>
     </header>
 
-        <!-- ============ WELCOME VIEW (two parts) ============ -->
     <section class="view active" id="welcome-view">
 
-      <!-- ===== PART 1 : Welcome note + intro ===== -->
       <div class="welcome-part welcome-part-1">
         <div class="welcome-inner">
           <span class="welcome-tag">🌾 Indian Agriculture · Season-wise Guide</span>
@@ -116,7 +112,70 @@
         <div class="scroll-hint" id="scroll-hint">Explore the options ↓</div>
       </div>
 
-      <!-- ===== PART 2 : Three main options ===== -->
+      <div class="weather-widget-card" style="max-width: 1000px; margin: 30px auto 10px; padding: 22px 28px; background: linear-gradient(135deg, #16382c, #2a5245); color: #fff; border-radius: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.2);">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 18px;">
+          <div>
+            <span style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: #ffd36b; font-weight: 600;">🌦️ Live Weather Updates / मौसम की जानकारी</span>
+            <h3 id="weatherCity" style="font-size: 1.6rem; margin-top: 4px; font-weight: 700; color: #f5f3e9;">Delhi, India</h3>
+            <p id="weatherDesc" style="font-size: 0.95rem; opacity: 0.9; color: #c9d6d2;">Loading weather data...</p>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <span id="weatherIcon" style="font-size: 3rem;">☀️</span>
+            <div>
+              <div id="weatherTemp" style="font-size: 2.2rem; font-weight: 800; line-height: 1; color: #ffd36b;">-- °C</div>
+              <div style="font-size: 0.85rem; color: #c9d6d2; margin-top: 5px;">Humidity: <span id="weatherHumidity" style="color:#fff; font-weight:600;">--%</span></div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="weatherInput" placeholder="Enter City (e.g. Patna)" style="padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); outline: none; font-size: 0.9rem; width: 160px; background: rgba(255,255,255,0.1); color: #fff;">
+            <button id="searchWeatherBtn" style="padding: 10px 16px; background: #ffd36b; color: #10231f; font-weight: 700; border-radius: 8px; cursor: pointer; border: none; transition: 0.2s;">Search</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="mandi-price-card" style="max-width: 1000px; margin: 25px auto; padding: 24px; background: #ffffff; border-radius: 18px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 20px;">
+          <div>
+            <span style="font-size: 0.85rem; color: #2e8b57; font-weight: 700; text-transform: uppercase;">📊 Live Market Rates</span>
+            <h3 style="font-size: 1.4rem; color: #173a30; margin-top: 2px;">Daily Mandi Prices / मंडी भाव</h3>
+          </div>
+
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <select id="mandiCropSelect" style="padding: 10px; border-radius: 8px; border: 1.5px solid #dcdcdc; outline: none; font-size: 0.9rem;">
+              <option value="all">🌾 All Crops (सभी फसलें)</option>
+              <option value="Wheat">Wheat (गेहूं)</option>
+              <option value="Rice">Rice / Paddy (धान)</option>
+              <option value="Mustard">Mustard (सरसों)</option>
+              <option value="Potato">Potato (आलू)</option>
+              <option value="Cotton">Cotton (कपास)</option>
+              <option value="Maize">Maize (मक्का)</option>
+            </select>
+
+            <button id="refreshMandiBtn" style="padding: 10px 18px; background: #16382c; color: #ffd36b; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">
+              🔄 Refresh Rates
+            </button>
+          </div>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem;">
+            <thead>
+              <tr style="background: #f0f7f4; color: #173a30;">
+                <th style="padding: 12px 16px; border-radius: 8px 0 0 8px;">Crop / फसल</th>
+                <th style="padding: 12px 16px;">Mandi / मंडी Location</th>
+                <th style="padding: 12px 16px;">Min Price (₹/Qtl)</th>
+                <th style="padding: 12px 16px;">Max Price (₹/Qtl)</th>
+                <th style="padding: 12px 16px; border-radius: 0 8px 8px 0;">Modal Price (औसत भाव)</th>
+              </tr>
+            </thead>
+            <tbody id="mandiTableBody">
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <div class="welcome-part welcome-part-2">
         <div class="welcome-options-head">
           <span class="eyebrow">Where would you like to go?</span>
@@ -124,6 +183,12 @@
           <p>Tap any option below to dive into the world of Indian agriculture.</p>
         </div>
         <div class="welcome-options">
+          <button class="welcome-option" id="opt-recommend">
+            <span class="opt-emoji">🌱</span>
+            <span class="opt-title">Smart Crop Finder</span>
+            <span class="opt-desc">Get crop recommendations based on your soil type and season.</span>
+            <span class="opt-go">Find Crops →</span>
+          </button>
           <button class="welcome-option" id="opt-season">
             <span class="opt-emoji">☀️</span>
             <span class="opt-title">Seasons</span>
@@ -147,7 +212,54 @@
 
     </section>
 
-    <!-- ============ INDIA MAP VIEW ============ -->
+    <section class="view" id="recommend-view">
+      <div class="section-head">
+        <div class="eyebrow">Smart Agriculture</div>
+        <h2>Crop Recommendation System / फसल सुझाव</h2>
+        <p>Select your farm conditions below to discover the most suitable crops to cultivate.</p>
+      </div>
+
+      <div style="max-width: 1000px; margin: 20px auto; padding: 26px; background: #fff; border-radius: 18px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+        <form id="recommenderForm" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; align-items: end;">
+          
+          <div>
+            <label style="font-weight: 700; font-size: 0.9rem; color: #173a30;">Season / मौसम:</label>
+            <select id="recSeason" style="width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #e2ebe6; margin-top: 6px; font-size: 0.95rem; outline: none; background: #f6faf8;">
+              <option value="summer">☀️ Summer (गर्मी / Zaid)</option>
+              <option value="winter">❄️ Winter (सर्दी / Rabi)</option>
+              <option value="rain">🌧️ Rain (बारिश / Kharif)</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="font-weight: 700; font-size: 0.9rem; color: #173a30;">Soil Type / मिट्टी का प्रकार:</label>
+            <select id="recSoil" style="width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #e2ebe6; margin-top: 6px; font-size: 0.95rem; outline: none; background: #f6faf8;">
+              <option value="all">🌐 All Soil Types (सभी मिट्टी)</option>
+              <option value="loam">🪴 Loamy Soil (दोमट मिट्टी)</option>
+              <option value="sandy">🏖️ Sandy Soil (बलुई मिट्टी)</option>
+              <option value="clay">🧱 Clay Soil (चिकनी मिट्टी)</option>
+              <option value="black">⬛ Black Cotton Soil (काली मिट्टी)</option>
+            </select>
+          </div>
+
+          <div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 13px; font-size: 1rem;">
+              🔍 Find Best Crops
+            </button>
+          </div>
+
+        </form>
+
+        <div id="recommendationResults" class="crop-grid" style="margin-top: 30px; padding: 0;">
+        </div>
+      </div>
+
+      <div class="map-bottom-nav">
+        <button class="btn" id="rec-back-welcome">← Back to Home</button>
+        <button class="btn btn-primary" id="rec-go-seasons">Browse All Seasons →</button>
+      </div>
+    </section>
+
     <section class="view" id="india-map-view">
       <div class="section-head">
         <div class="eyebrow">Where Crops Grow</div>
@@ -192,7 +304,6 @@
       </div>
     </section>
 
-    <!-- ============ AGRICULTURE & FESTIVALS VIEW ============ -->
     <section class="view" id="agri-view">
       <div class="agri-hero">
         <div class="agri-hero-inner">
@@ -227,7 +338,7 @@
           <p>Across India, every harvest is celebrated with joy, gratitude and colour. These festivals honour the farmer, the soil and the seasons — and they are among the most beloved festivals in the country.</p>
         </div>
 
-        <div class="festival-grid" id="festival-grid"><!-- rendered by JS --></div>
+        <div class="festival-grid" id="festival-grid"></div>
       </div>
 
       <div class="map-bottom-nav">
@@ -236,17 +347,15 @@
       </div>
     </section>
 
-    <!-- ============ SEASON SELECT VIEW ============ -->
     <section class="view" id="season-view">
       <div class="section-head">
         <div class="eyebrow">Choose a Season</div>
         <h2>Which season would you like to explore?</h2>
         <p>Every Indian season brings its own harvest. Tap a card to see the crops grown in that season.</p>
       </div>
-      <div class="season-grid" id="season-grid"><!-- rendered by JS --></div>
+      <div class="season-grid" id="season-grid"></div>
     </section>
 
-    <!-- ============ CROPS LIST VIEW ============ -->
     <section class="view" id="crops-view">
       <div class="crops-hero" id="crops-hero">
         <div class="bg"></div>
@@ -265,10 +374,9 @@
         <span class="count-pill" id="crop-count">0 crops</span>
       </div>
 
-      <div class="crop-grid" id="crop-grid"><!-- rendered by JS --></div>
+      <div class="crop-grid" id="crop-grid"></div>
     </section>
 
-    <!-- ============ CROP DETAIL VIEW ============ -->
     <section class="view" id="crop-detail-view">
       <div class="detail-hero" id="detail-hero">
         <div class="bg"></div>
@@ -322,7 +430,6 @@
       </div>
     </section>
 
-    <!-- ============ FOOTER ============ -->
     <footer class="app-footer">
       <p><strong>🌾 Kishan - Tech</strong> — A season-wise guide to Indian crops</p>
     </footer>

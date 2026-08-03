@@ -1,6 +1,6 @@
 /* ============================================================
    KISHAN - TECH — Application Logic
-   Views: welcome -> india-map -> agri -> season-select -> crops-list -> crop-detail
+   Views: welcome -> recommend -> india-map -> agri -> season-select -> crops-list -> crop-detail
    ============================================================ */
 
 const SEASON_META = {
@@ -73,10 +73,7 @@ let currentSeason = null;
 let currentCrop = null;
 let currentView = "welcome";
 
-/* ----------  Data (embedded from data.js)  ---------- */
-/* CROP_DATA is a global provided by assets/data.js (no JSON fetch) */
-
-/* ----------  DOM helpers  ---------- */
+/* ---------- DOM Helpers ---------- */
 const $ = (sel, root = document) => root.querySelector(sel);
 const el = (tag, cls, html) => {
   const n = document.createElement(tag);
@@ -85,15 +82,11 @@ const el = (tag, cls, html) => {
   return n;
 };
 
-/* ----------  Navigation (with browser Back support) ---------- */
-/*
-  Each in-app view is pushed to the browser history so that the browser Back
-  button (and mouse back gesture / file:// Back) navigates back THROUGH the
-  app views instead of leaving the site. A popstate handler replays the view.
-*/
-const VIEW_HISTORY = [];          // stack of view descriptors for back logic
-const NAV_TAB_OF_VIEW = {         // which top-nav tab a view belongs to
+/* ---------- Navigation & Browser Back Logic ---------- */
+const VIEW_HISTORY = [];
+const NAV_TAB_OF_VIEW = {
   "welcome-view": "welcome",
+  "recommend-view": "recommend",
   "season-view": "season",
   "agri-view": "agri",
   "india-map-view": "india-map",
@@ -105,20 +98,17 @@ function highlightNavTab(tabKey) {
   });
 }
 
-/* Build a descriptor for the current screen so we can return to it on Back */
 function currentDescriptor() {
   return { view: currentView, season: currentSeason, crop: currentCrop ? currentCrop.name : null };
 }
 
-/* Show a view WITHOUT pushing history (used by popstate / initial load) */
 function showView(id, opts) {
   opts = opts || {};
   document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
   const v = document.getElementById(id);
-  v.classList.add("active");
+  if (v) v.classList.add("active");
   currentView = id;
   if (!opts.keepScroll) {
-    /* For the welcome view, start at the top note (part 1) on first entry */
     if (id === "welcome-view") {
       window.scrollTo({ top: 0, behavior: "auto" });
     } else {
@@ -129,19 +119,15 @@ function showView(id, opts) {
   highlightNavTab(NAV_TAB_OF_VIEW[id] || "welcome");
 }
 
-/* Navigate to a view AND push a history entry (so Back returns inside the app) */
 function navigate(id) {
-  /* record where we came from */
   VIEW_HISTORY.push(currentDescriptor());
   showView(id);
   history.pushState({ view: id }, "", location.pathname + location.search);
 }
 
-/* popstate = browser Back / Forward: replay the previous app screen */
 window.addEventListener("popstate", (e) => {
   const prev = VIEW_HISTORY.pop();
   if (!prev) {
-    /* nothing in our stack -> go home rather than leave */
     showView("welcome-view");
     history.pushState({ view: "welcome-view" }, "", location.pathname + location.search);
     return;
@@ -162,6 +148,7 @@ window.addEventListener("popstate", (e) => {
 });
 
 function goWelcome() { navigate("welcome-view"); currentSeason = null; currentCrop = null; }
+function goRecommend() { navigate("recommend-view"); currentSeason = null; currentCrop = null; }
 function goSeasons() { navigate("season-view"); currentSeason = null; currentCrop = null; }
 function goIndiaMap() { navigate("india-map-view"); currentSeason = null; currentCrop = null; }
 function goAgri() { navigate("agri-view"); currentSeason = null; currentCrop = null; }
@@ -180,6 +167,7 @@ function goCropDetail(season, name) {
 
 function updateCrumb() {
   const c = $("#crumb-current");
+  if (!c) return;
   let trail = "";
   if (currentCrop) {
     trail = currentCrop.name;
@@ -187,6 +175,7 @@ function updateCrumb() {
     trail = SEASON_META[currentSeason].label + " Crops";
   } else {
     const labels = {
+      "recommend-view": "Smart Finder",
       "season-view": "Seasons",
       "india-map-view": "India Crop Map",
       "agri-view": "Agriculture & Festivals",
@@ -198,14 +187,12 @@ function updateCrumb() {
   c.textContent = trail;
 }
 
-/* ----------  India Map filtering  ---------- */
+/* ---------- India Map Filtering ---------- */
 function filterMap(season) {
-  // toggle active button
   document.querySelectorAll(".map-filter").forEach(b => b.classList.remove("active"));
   const btn = document.querySelector(`.map-filter[data-season="${season}"]`);
   if (btn) btn.classList.add("active");
 
-  // highlight zones
   const zones = document.querySelectorAll(".map-zone");
   zones.forEach(z => {
     if (season === "all" || z.dataset.season === season) {
@@ -215,19 +202,18 @@ function filterMap(season) {
       z.classList.add("dim");
     }
   });
-  // remove dim from shown ones
   zones.forEach(z => { if (z.classList.contains("show")) z.classList.remove("dim"); });
 
-  // update info box
   const info = MAP_INFO[season] || MAP_INFO.all;
-  $("#map-info-title").textContent = info.title;
-  $("#map-info-text").textContent = info.text;
-  $("#map-info-crops").innerHTML = `<strong>Key crops:</strong> ${info.crops}`;
+  if ($("#map-info-title")) $("#map-info-title").textContent = info.title;
+  if ($("#map-info-text")) $("#map-info-text").textContent = info.text;
+  if ($("#map-info-crops")) $("#map-info-crops").innerHTML = `<strong>Key crops:</strong> ${info.crops}`;
 }
 
-/* ----------  Render: Festivals  ---------- */
+/* ---------- Render: Festivals ---------- */
 function renderFestivals() {
   const grid = $("#festival-grid");
+  if (!grid) return;
   grid.innerHTML = "";
   FESTIVALS.forEach(f => {
     const card = el("div", `festival-card season-${f.season}`);
@@ -243,9 +229,10 @@ function renderFestivals() {
   });
 }
 
-/* ----------  Render: Season select  ---------- */
+/* ---------- Render: Season Select ---------- */
 function renderSeasons() {
   const grid = $("#season-grid");
+  if (!grid) return;
   grid.innerHTML = "";
   Object.keys(SEASON_META).forEach(key => {
     const m = SEASON_META[key];
@@ -265,23 +252,27 @@ function renderSeasons() {
   });
 }
 
-/* ----------  Render: Crops list  ---------- */
+/* ---------- Render: Crops List ---------- */
 function renderCropsList(season) {
   const m = SEASON_META[season];
   const hero = $("#crops-hero");
-  hero.querySelector(".bg").style.backgroundImage = `url('${m.bg}')`;
-  hero.querySelector(".icon").textContent = m.icon;
-  hero.querySelector("h2").textContent = `${m.label} Season Crops`;
-  hero.querySelector("p").textContent = `${m.tagline} · ${m.month} · ${CROPS[season].length} crops`;
+  if (hero) {
+    hero.querySelector(".bg").style.backgroundImage = `url('${m.bg}')`;
+    hero.querySelector(".icon").textContent = m.icon;
+    hero.querySelector("h2").textContent = `${m.label} Season Crops`;
+    hero.querySelector("p").textContent = `${m.tagline} · ${m.month} · ${CROPS[season].length} crops`;
+  }
 
-  $("#crop-search").value = "";
+  if ($("#crop-search")) $("#crop-search").value = "";
   renderCropCards(season, "");
-  // wire search
-  $("#crop-search").oninput = (e) => renderCropCards(season, e.target.value.trim().toLowerCase());
+  if ($("#crop-search")) {
+    $("#crop-search").oninput = (e) => renderCropCards(season, e.target.value.trim().toLowerCase());
+  }
 }
 
 function renderCropCards(season, query) {
   const grid = $("#crop-grid");
+  if (!grid) return;
   const list = CROPS[season];
   const filtered = query
     ? list.filter(c =>
@@ -291,7 +282,7 @@ function renderCropCards(season, query) {
         (c.region || "").toLowerCase().includes(query))
     : list;
 
-  $("#crop-count").textContent = `${filtered.length} crop${filtered.length !== 1 ? "s" : ""}`;
+  if ($("#crop-count")) $("#crop-count").textContent = `${filtered.length} crop${filtered.length !== 1 ? "s" : ""}`;
 
   grid.innerHTML = "";
   if (!filtered.length) {
@@ -335,32 +326,229 @@ function shortSoil(s) {
   return head.length > 32 ? head.slice(0, 30) + "…" : head;
 }
 
-/* ----------  Render: Crop detail  ---------- */
+/* ---------- Render: Crop Detail ---------- */
 function renderCropDetail(season, crop) {
   const m = SEASON_META[season];
   const hero = $("#detail-hero");
-  hero.querySelector(".bg").style.backgroundImage = `url('${crop.img}')`;
-  $("#detail-back").onclick = () => goCrops(season);
-  $("#detail-name").textContent = crop.name;
-  $("#detail-hindi").textContent = crop.hindi || "";
-  $("#detail-sci").textContent = crop.wiki;
-  $("#detail-season-chip").innerHTML = `${m.icon} ${m.label} Season · ${m.month}`;
+  if (hero) hero.querySelector(".bg").style.backgroundImage = `url('${crop.img}')`;
+  if ($("#detail-back")) $("#detail-back").onclick = () => goCrops(season);
+  if ($("#detail-name")) $("#detail-name").textContent = crop.name;
+  if ($("#detail-hindi")) $("#detail-hindi").textContent = crop.hindi || "";
+  if ($("#detail-sci")) $("#detail-sci").textContent = crop.wiki;
+  if ($("#detail-season-chip")) $("#detail-season-chip").innerHTML = `${m.icon} ${m.label} Season · ${m.month}`;
 
-  $("#detail-lead").textContent = crop.desc;
-  $("#detail-rain").textContent = crop.rain;
-  $("#detail-soil").textContent = crop.soil || "Well-drained loamy soil";
-  $("#detail-region").textContent = crop.region;
-  $("#detail-season-full").innerHTML = `${m.icon} ${m.label} Season<br><span style="font-weight:400;opacity:.8;font-size:.92rem">${m.tagline} (${m.month})</span>`;
-  $("#detail-back-bottom").onclick = () => goCrops(season);
+  if ($("#detail-lead")) $("#detail-lead").textContent = crop.desc;
+  if ($("#detail-rain")) $("#detail-rain").textContent = crop.rain;
+  if ($("#detail-soil")) $("#detail-soil").textContent = crop.soil || "Well-drained loamy soil";
+  if ($("#detail-region")) $("#detail-region").textContent = crop.region;
+  if ($("#detail-season-full")) $("#detail-season-full").innerHTML = `${m.icon} ${m.label} Season<br><span style="font-weight:400;opacity:.8;font-size:.92rem">${m.tagline} (${m.month})</span>`;
+  if ($("#detail-back-bottom")) $("#detail-back-bottom").onclick = () => goCrops(season);
 }
 
-/* ----------  Background Music  ---------- */
+/* ---------- Crop Recommendation System Logic ---------- */
+function initCropRecommender() {
+  const form = $("#recommenderForm");
+  const resultsContainer = $("#recommendationResults");
+
+  if (!form) return;
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const selectedSeason = $("#recSeason").value;
+    const selectedSoil = $("#recSoil").value;
+
+    if (!CROPS || !CROPS[selectedSeason]) return;
+
+    const list = CROPS[selectedSeason];
+    const recommended = list.filter((crop) => {
+      if (selectedSoil === "all") return true;
+      const soilText = (crop.soil || "").toLowerCase();
+      return soilText.includes(selectedSoil.toLowerCase());
+    });
+
+    resultsContainer.innerHTML = "";
+
+    if (recommended.length === 0) {
+      resultsContainer.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:30px; color:#6b7d76;">
+        😣 Is soil type ke liye is season me koi exact crop match nahi hui. Try selecting "All Soil Types".
+      </div>`;
+      return;
+    }
+
+    recommended.forEach((crop) => {
+      const card = el("div", "crop-card");
+      card.onclick = () => goCropDetail(selectedSeason, crop.name);
+      card.innerHTML = `
+        <div class="thumb">
+          <img src="${crop.img}" alt="${escapeHtml(crop.name)}" loading="lazy"
+               onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'400\\' height=\\'300\\'><rect width=\\'100%25\\' height=\\'100%25\\' fill=\\'%23eef3f0\\'/><text x=\\'50%25\\' y=\\'50%25\\' font-family=\\'sans-serif\\' font-size=\\'22\\' fill=\\'%235a8a72\\' text-anchor=\\'middle\\' dy=\\'.35em\\'>${encodeURIComponent(crop.name)}</text></svg>'">
+        </div>
+        <div class="body">
+          <div class="name">${escapeHtml(crop.name)}</div>
+          <div class="hindi-name">${escapeHtml(crop.hindi || "")}</div>
+          <div class="sci">${escapeHtml(crop.wiki)}</div>
+          <div class="tags">
+            <span class="tag rain">🌧️ ${escapeHtml(crop.rain)}</span>
+            <span class="tag soil">🪴 ${shortSoil(crop.soil)}</span>
+          </div>
+          <div class="crop-desc">${escapeHtml(crop.desc)}</div>
+          <div class="more">View details →</div>
+        </div>`;
+      resultsContainer.appendChild(card);
+    });
+  });
+}
+
+/* ---------- Live Weather Widget Logic (Open-Meteo API) ---------- */
+async function fetchWeather(cityName = 'Delhi') {
+  const cityEl = document.getElementById('weatherCity');
+  const tempEl = document.getElementById('weatherTemp');
+  const descEl = document.getElementById('weatherDesc');
+  const humidityEl = document.getElementById('weatherHumidity');
+  const iconEl = document.getElementById('weatherIcon');
+
+  if (!cityEl) return;
+
+  try {
+    descEl.textContent = 'Fetching weather...';
+
+    const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityName)}&count=1&language=en&format=json`);
+    const geoData = await geoRes.json();
+
+    if (!geoData.results || geoData.results.length === 0) {
+      descEl.textContent = 'City not found. Try another city!';
+      return;
+    }
+
+    const city = geoData.results[0];
+    const { latitude, longitude, name, admin1 } = city;
+
+    const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&hourly=relativehumidity_2m`);
+    const weatherData = await weatherRes.json();
+
+    const current = weatherData.current_weather;
+    const temp = Math.round(current.temperature);
+    const weatherCode = current.weathercode;
+
+    const weatherMap = {
+      0: { text: 'Clear Sky / साफ मौसम', icon: '☀️' },
+      1: { text: 'Mainly Clear', icon: '🌤️' },
+      2: { text: 'Partly Cloudy / हल्के बादल', icon: '⛅' },
+      3: { text: 'Overcast / घने बादल', icon: '☁️' },
+      45: { text: 'Foggy / कोहरा', icon: '🌫️' },
+      51: { text: 'Light Drizzle / हल्की बूंदाबांदी', icon: '🌦️' },
+      61: { text: 'Rainy / बारिश', icon: '🌧️' },
+      71: { text: 'Snowy / बर्फबारी', icon: '❄️' },
+      95: { text: 'Thunderstorm / तूफान', icon: '🌩️' }
+    };
+
+    const condition = weatherMap[weatherCode] || { text: 'Moderate Weather', icon: '🌤️' };
+
+    cityEl.textContent = `${name}, ${admin1 || 'India'}`;
+    tempEl.textContent = `${temp} °C`;
+    descEl.textContent = condition.text;
+    iconEl.textContent = condition.icon;
+    humidityEl.textContent = `${weatherData.hourly.relativehumidity_2m[0]}%`;
+
+  } catch (error) {
+    console.error('Weather Fetch Error:', error);
+    if (descEl) descEl.textContent = 'Unable to load weather details.';
+  }
+}
+
+function initWeatherWidget() {
+  const searchBtn = document.getElementById('searchWeatherBtn');
+  const inputEl = document.getElementById('weatherInput');
+
+  fetchWeather('Delhi');
+
+  if (searchBtn && inputEl) {
+    searchBtn.addEventListener('click', () => {
+      const query = inputEl.value.trim();
+      if (query) fetchWeather(query);
+    });
+
+    inputEl.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        const query = inputEl.value.trim();
+        if (query) fetchWeather(query);
+      }
+    });
+  }
+}
+
+/* ---------- Live Mandi Price Logic ---------- */
+const MANDI_DATA = [
+  { crop: "Wheat (गेहूं)", mandi: "Khanna, Punjab", min: "₹ 2,275", max: "₹ 2,450", modal: "₹ 2,350 / Qtl" },
+  { crop: "Wheat (गेहूं)", mandi: "Indore, Madhya Pradesh", min: "₹ 2,300", max: "₹ 2,600", modal: "₹ 2,420 / Qtl" },
+  { crop: "Rice / Paddy (धान)", mandi: "Karnal, Haryana", min: "₹ 3,200", max: "₹ 3,850", modal: "₹ 3,550 / Qtl" },
+  { crop: "Rice / Paddy (धान)", mandi: "Burdwan, West Bengal", min: "₹ 2,100", max: "₹ 2,400", modal: "₹ 2,250 / Qtl" },
+  { crop: "Mustard (सरसों)", mandi: "Bharatpur, Rajasthan", min: "₹ 5,100", max: "₹ 5,650", modal: "₹ 5,400 / Qtl" },
+  { crop: "Potato (आलू)", mandi: "Agra, Uttar Pradesh", min: "₹ 1,200", max: "₹ 1,650", modal: "₹ 1,450 / Qtl" },
+  { crop: "Cotton (कपास)", mandi: "Rajkot, Gujarat", min: "₹ 6,800", max: "₹ 7,500", modal: "₹ 7,150 / Qtl" },
+  { crop: "Maize (मक्का)", mandi: "Davangere, Karnataka", min: "₹ 1,950", max: "₹ 2,250", modal: "₹ 2,100 / Qtl" }
+];
+
+function renderMandiPrices(filterCrop = "all") {
+  const tbody = document.getElementById("mandiTableBody");
+  if (!tbody) return;
+
+  tbody.innerHTML = "";
+
+  const filtered = filterCrop === "all" 
+    ? MANDI_DATA 
+    : MANDI_DATA.filter(item => item.crop.toLowerCase().includes(filterCrop.toLowerCase()));
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 20px; color: #888;">Is crop ke liye rates available nahi hain.</td></tr>`;
+    return;
+  }
+
+  filtered.forEach((item) => {
+    const tr = document.createElement("tr");
+    tr.style.borderBottom = "1px solid #eef3f0";
+    tr.innerHTML = `
+      <td style="padding: 12px 16px; font-weight: 600; color: #173a30;">${item.crop}</td>
+      <td style="padding: 12px 16px; color: #555;">📍 ${item.mandi}</td>
+      <td style="padding: 12px 16px; color: #d9534f; font-weight: 600;">${item.min}</td>
+      <td style="padding: 12px 16px; color: #2e8b57; font-weight: 600;">${item.max}</td>
+      <td style="padding: 12px 16px; font-weight: 700; color: #10231f; background: #f9fbf9;">${item.modal}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function initMandiPrices() {
+  const select = document.getElementById("mandiCropSelect");
+  const refreshBtn = document.getElementById("refreshMandiBtn");
+
+  renderMandiPrices("all");
+
+  if (select) {
+    select.addEventListener("change", (e) => {
+      renderMandiPrices(e.target.value);
+    });
+  }
+
+  if (refreshBtn) {
+    refreshBtn.addEventListener("click", () => {
+      refreshBtn.textContent = "⌛ Loading...";
+      setTimeout(() => {
+        renderMandiPrices(select ? select.value : "all");
+        refreshBtn.textContent = "🔄 Refresh Rates";
+      }, 500);
+    });
+  }
+}
+
+/* ---------- Background Music ---------- */
 function initMusic() {
   const audio = $("#bg-music");
   const btn = $("#music-toggle");
+  if (!audio || !btn) return;
   let isPlaying = false;
 
-  // Safely call play() — some environments return undefined instead of a Promise
   const safePlay = (onOk, onErr) => {
     let result;
     try { result = audio.play(); } catch (e) { if (onErr) onErr(e); return; }
@@ -373,23 +561,19 @@ function initMusic() {
     }
   };
 
-  // Try to autoplay (browsers may block; user can toggle)
   const tryPlay = () => {
     safePlay(() => { isPlaying = true; btn.classList.add("playing"); },
              () => { isPlaying = false; btn.classList.remove("playing"); });
   };
 
-  // Attempt autoplay
   tryPlay();
 
-  // On first user click anywhere, try to start music
   const startOnce = () => {
     if (!isPlaying) tryPlay();
     document.removeEventListener("click", startOnce);
   };
   document.addEventListener("click", startOnce);
 
-  // Toggle button
   btn.onclick = (e) => {
     e.stopPropagation();
     if (isPlaying) {
@@ -402,18 +586,20 @@ function initMusic() {
   };
 }
 
-/* ----------  Utilities  ---------- */
+/* ---------- Utilities ---------- */
 function escapeHtml(s) {
   return String(s == null ? "" : s)
     .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
-/* ----------  Init  ---------- */
+/* ---------- Main Init ---------- */
 function init() {
   if (typeof CROP_DATA === "undefined") {
     console.error("CROP_DATA not found - ensure assets/data.js is loaded before app.js");
-    document.querySelector(".loader p").textContent = "Could not load crop data. Please refresh.";
+    if (document.querySelector(".loader p")) {
+      document.querySelector(".loader p").textContent = "Could not load crop data. Please refresh.";
+    }
     return;
   }
   CROPS = CROP_DATA;
@@ -421,38 +607,48 @@ function init() {
   renderSeasons();
   renderFestivals();
 
-  // welcome CTA scrolls down to the three options (part 2)
-  $("#welcome-cta").onclick = () => {
-    const part2 = document.querySelector(".welcome-part-2");
-    if (part2) part2.scrollIntoView({ behavior: "smooth" });
-  };
-  $("#scroll-hint").onclick = () => {
-    const part2 = document.querySelector(".welcome-part-2");
-    if (part2) part2.scrollIntoView({ behavior: "smooth" });
-  };
+  // Welcome CTA
+  if ($("#welcome-cta")) {
+    $("#welcome-cta").onclick = () => {
+      const part2 = document.querySelector(".welcome-part-2");
+      if (part2) part2.scrollIntoView({ behavior: "smooth" });
+    };
+  }
+  if ($("#scroll-hint")) {
+    $("#scroll-hint").onclick = () => {
+      const part2 = document.querySelector(".welcome-part-2");
+      if (part2) part2.scrollIntoView({ behavior: "smooth" });
+    };
+  }
 
-  // welcome part-2 option buttons
-  $("#opt-season").onclick = () => goSeasons();
-  $("#opt-agri").onclick = () => goAgri();
-  $("#opt-map").onclick = () => goIndiaMap();
+  // Welcome Part-2 Options
+  if ($("#opt-recommend")) $("#opt-recommend").onclick = () => goRecommend();
+  if ($("#opt-season")) $("#opt-season").onclick = () => goSeasons();
+  if ($("#opt-agri")) $("#opt-agri").onclick = () => goAgri();
+  if ($("#opt-map")) $("#opt-map").onclick = () => goIndiaMap();
 
-  // top nav tabs (highlight active; switch views in place)
+  // Top Nav Tabs
   document.querySelectorAll(".nav-link").forEach(b => {
     b.onclick = () => {
       const nav = b.dataset.nav;
       if (nav === "welcome") goWelcome();
+      else if (nav === "recommend") goRecommend();
       else if (nav === "season") goSeasons();
       else if (nav === "agri") goAgri();
       else if (nav === "india-map") goIndiaMap();
     };
   });
 
-  // brand logo = home
-  $("#home-btn").onclick = () => goWelcome();
+  // Brand logo
+  if ($("#home-btn")) $("#home-btn").onclick = () => goWelcome();
 
-  // india map page
-  $("#map-back-welcome").onclick = () => goWelcome();
-  $("#map-go-seasons").onclick = () => goSeasons();
+  // Recommend view bottom buttons
+  if ($("#rec-back-welcome")) $("#rec-back-welcome").onclick = () => goWelcome();
+  if ($("#rec-go-seasons")) $("#rec-go-seasons").onclick = () => goSeasons();
+
+  // India map page
+  if ($("#map-back-welcome")) $("#map-back-welcome").onclick = () => goWelcome();
+  if ($("#map-go-seasons")) $("#map-go-seasons").onclick = () => goSeasons();
   document.querySelectorAll(".map-filter").forEach(b => {
     b.onclick = () => filterMap(b.dataset.season);
   });
@@ -460,29 +656,28 @@ function init() {
     z.onclick = () => filterMap(z.dataset.season);
   });
 
-  // agri page
-  $("#agri-back-welcome").onclick = () => goWelcome();
-  $("#agri-go-seasons").onclick = () => goSeasons();
+  // Agri page
+  if ($("#agri-back-welcome")) $("#agri-back-welcome").onclick = () => goWelcome();
+  if ($("#agri-go-seasons")) $("#agri-go-seasons").onclick = () => goSeasons();
 
-  // welcome stats
-  $("#stat-crops").textContent = Object.values(CROPS).reduce((a, b) => a + b.length, 0);
-  $("#stat-seasons").textContent = Object.keys(CROPS).length;
+  // Welcome Stats
+  if ($("#stat-crops")) $("#stat-crops").textContent = Object.values(CROPS).reduce((a, b) => a + b.length, 0);
+  if ($("#stat-seasons")) $("#stat-seasons").textContent = Object.keys(CROPS).length;
 
-  // initialize map to show all
   filterMap("all");
-
-  // init background music
   initMusic();
+  initCropRecommender();
+  initWeatherWidget();
+  initMandiPrices();
 
-  // seed browser history so the FIRST Back stays inside the app
   history.replaceState({ view: "welcome-view" }, "", location.pathname + location.search);
 
-  // hide loader
-  document.querySelector(".loader").classList.add("hide");
+  if (document.querySelector(".loader")) document.querySelector(".loader").classList.add("hide");
   showView("welcome-view");
 }
 
 document.addEventListener("DOMContentLoaded", init);
+
 /* ---------- User Profile Header Handler ---------- */
 function initUserProfile() {
   const profileBtn = document.getElementById('userProfileBtn');
@@ -501,16 +696,16 @@ function initUserProfile() {
   if (profileData) {
     try {
       const user = JSON.parse(profileData);
-      userNameSpan.textContent = user.name || 'User';
-      dropdownName.textContent = user.name || 'User';
-      dropdownEmail.textContent = user.email || '';
+      if (userNameSpan) userNameSpan.textContent = user.name || 'User';
+      if (dropdownName) dropdownName.textContent = user.name || 'User';
+      if (dropdownEmail) dropdownEmail.textContent = user.email || '';
 
-      if (user.avatar) {
+      if (user.avatar && avatarImg) {
         avatarImg.src = user.avatar;
         avatarImg.style.display = 'block';
-        initialSpan.style.display = 'none';
-      } else {
-        avatarImg.style.display = 'none';
+        if (initialSpan) initialSpan.style.display = 'none';
+      } else if (initialSpan) {
+        if (avatarImg) avatarImg.style.display = 'none';
         initialSpan.style.display = 'grid';
         initialSpan.textContent = (user.name || 'U').charAt(0).toUpperCase();
       }
