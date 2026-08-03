@@ -819,3 +819,36 @@ a { color: inherit; text-decoration: none; }
   .agri-content { padding: 24px 16px 10px; }
   .festival-grid { grid-template-columns: 1fr; }
 }
+/* User Profile Header Dropdown CSS */
+.user-profile-wrapper { position: relative; display: inline-block; }
+.user-profile-btn {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px; padding: 4px 12px 4px 5px;
+  color: #fff; cursor: pointer; transition: background 0.2s ease;
+}
+.user-profile-btn:hover { background: rgba(255, 255, 255, 0.22); border-color: #ffd36b; }
+.user-avatar { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; }
+.user-initial {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: linear-gradient(135deg, #ffd36b, #7bd66f);
+  color: #10231f; font-weight: 700; display: grid; place-items: center; font-size: 0.85rem;
+}
+.user-name { font-size: 0.85rem; font-weight: 600; max-width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.user-profile-btn .arrow { font-size: 0.75rem; opacity: 0.8; }
+.user-dropdown {
+  position: absolute; top: calc(100% + 10px); right: 0; width: 200px;
+  background: #0e2620; border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 14px; padding: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  display: none; flex-direction: column; z-index: 100; backdrop-filter: blur(12px);
+}
+.user-dropdown.show { display: flex; }
+.user-info-name { font-weight: 700; font-size: 0.9rem; color: #ffd36b; margin-bottom: 2px; }
+.user-info-email { font-size: 0.75rem; color: rgba(255, 255, 255, 0.7); word-break: break-all; }
+.user-dropdown hr { border: 0; border-top: 1px solid rgba(255, 255, 255, 0.12); margin: 6px 0; }
+.logout-btn {
+  width: 100%; text-align: left; padding: 8px 10px; background: transparent; border: 0;
+  color: #e9897b; font-weight: 600; font-size: 0.85rem; border-radius: 8px; cursor: pointer;
+}
+.logout-btn:hover { background: rgba(233, 137, 123, 0.15); }

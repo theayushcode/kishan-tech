@@ -483,3 +483,60 @@ function init() {
 }
 
 document.addEventListener("DOMContentLoaded", init);
+/* ---------- User Profile Header Handler ---------- */
+function initUserProfile() {
+  const profileBtn = document.getElementById('userProfileBtn');
+  const dropdown = document.getElementById('userDropdown');
+  const logoutBtn = document.getElementById('logoutBtn');
+
+  if (!profileBtn || !dropdown) return;
+
+  const avatarImg = document.getElementById('userAvatar');
+  const initialSpan = document.getElementById('userInitial');
+  const userNameSpan = document.getElementById('userName');
+  const dropdownName = document.getElementById('dropdownName');
+  const dropdownEmail = document.getElementById('dropdownEmail');
+
+  const profileData = localStorage.getItem('userProfile');
+  if (profileData) {
+    try {
+      const user = JSON.parse(profileData);
+      userNameSpan.textContent = user.name || 'User';
+      dropdownName.textContent = user.name || 'User';
+      dropdownEmail.textContent = user.email || '';
+
+      if (user.avatar) {
+        avatarImg.src = user.avatar;
+        avatarImg.style.display = 'block';
+        initialSpan.style.display = 'none';
+      } else {
+        avatarImg.style.display = 'none';
+        initialSpan.style.display = 'grid';
+        initialSpan.textContent = (user.name || 'U').charAt(0).toUpperCase();
+      }
+    } catch (e) {
+      console.error('Failed to parse user profile', e);
+    }
+  }
+
+  profileBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    dropdown.classList.toggle('show');
+  });
+
+  document.addEventListener('click', () => {
+    dropdown.classList.remove('show');
+  });
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('isLoggedIn');
+      localStorage.removeItem('userProfile');
+      window.location.href = 'login page/login.html';
+    });
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initUserProfile();
+});

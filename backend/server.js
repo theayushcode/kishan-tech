@@ -41,9 +41,42 @@ app.post('/api/login', (req, res) => {
     }
   });
 });
+// ==========================================
+// NEW: Register API Endpoint (Naya Account Create Karne Ke Liye)
+// ==========================================
+app.post('/api/register', (req, res) => {
+  const { name, email, password } = req.body;
+
+  if (!name || !email || !password) {
+    return res.status(400).json({ success: false, message: 'Sabhi fields bharna zaroori hai!' });
+  }
+
+  // Pehle check karein ki Email pehle se register toh nahi hai
+  const checkSql = 'SELECT * FROM users WHERE email = ?';
+  db.query(checkSql, [email], (err, results) => {
+    if (err) {
+      return res.status(500).json({ success: false, message: 'Server Error' });
+    }
+
+    if (results.length > 0) {
+      return res.status(400).json({ success: false, message: 'Ye Email pehle se registered hai!' });
+    }
+
+    // Naya user Insert karein
+    const insertSql = 'INSERT INTO users (name, email, password) VALUES (?, ?, ?)';
+    db.query(insertSql, [name, email, password], (err, result) => {
+      if (err) {
+        return res.status(500).json({ success: false, message: 'User create karne mein dikkat aayi!' });
+      }
+
+      res.json({ success: true, message: 'Account successful create ho gaya!' });
+    });
+  });
+});
 
 // Server Start
-const PORT = 3000;
+const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });

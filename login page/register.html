@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Account · Kishan - Tech</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../style.css" />
+  <link rel="stylesheet" href="login.css" />
+</head>
+<body>
+  <div id="app">
+
+    <header class="brand-bar">
+      <a href="../index.html" class="brand" style="text-decoration:none;">
+        <span class="logo">🌾</span>
+        <span class="brand-text">Kishan&nbsp;·&nbsp;Tech</span>
+      </a>
+    </header>
+
+    <main class="login-stage">
+      <div class="login-atmosphere" aria-hidden="true"></div>
+
+      <section class="auth-card">
+        <span class="auth-eyebrow">🌾 Join Kishan · Tech</span>
+
+        <h1 class="auth-title">Create an <span class="auth-accent">Account</span></h1>
+        <p class="auth-lede">Sign up to get started and explore agricultural insights.</p>
+
+        <form id="registerForm" novalidate>
+          <div class="auth-field">
+            <label for="name">Full Name</label>
+            <div class="auth-input-shell" id="nameShell">
+              <input type="text" id="name" name="name" placeholder="Ayush Kumar" required>
+            </div>
+            <span class="auth-err" id="nameErr"></span>
+          </div>
+
+          <div class="auth-field">
+            <label for="email">Email address</label>
+            <div class="auth-input-shell" id="emailShell">
+              <input type="email" id="email" name="email" placeholder="you@example.com" required>
+            </div>
+            <span class="auth-err" id="emailErr"></span>
+          </div>
+
+          <div class="auth-field">
+            <label for="password">Password</label>
+            <div class="auth-input-shell" id="pwShell">
+              <input type="password" id="password" name="password" placeholder="Minimum 6 characters" required minlength="6">
+            </div>
+            <span class="auth-err" id="pwErr"></span>
+          </div>
+
+          <button type="submit" class="auth-submit" id="submitBtn">
+            <span class="auth-spinner"></span><span class="btn-label">Create Account</span>
+          </button>
+
+          <div class="auth-status" id="statusBox"></div>
+        </form>
+
+        <p class="auth-foot-note">Already have an account? <a href="login.html">Sign In</a></p>
+        <a href="../index.html" class="auth-back-link">← Back to Home</a>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <p><strong>🌾 Kishan - Tech</strong> — A season-wise guide to Indian crops</p>
+    </footer>
+
+  </div>
+
+  <script src="register.js"></script>
+</body>
+</html>

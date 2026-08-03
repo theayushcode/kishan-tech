@@ -105,7 +105,7 @@ form.addEventListener('submit', (e) => {
       statusBox.textContent = 'Signed in — taking you to the home page…';
 
       // Save session in Browser LocalStorage
-      localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('userProfile', JSON.stringify({ name: emailInput.value.split('@')[0], email: emailInput.value, avatar: '' }));
 
       // Redirect to main index.html
       setTimeout(() => {
@@ -133,3 +133,49 @@ document.querySelectorAll('.auth-oauth button').forEach(btn => {
     setTimeout(() => btn.style.borderColor = '', 400);
   });
 });
+// ---------- Google OAuth Integration ----------
+function parseJwt(token) {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    return JSON.parse(jsonPayload);
+  } catch (e) { return null; }
+}
+
+function handleGoogleResponse(response) {
+  const payload = parseJwt(response.credential);
+  if (payload) {
+    const userProfile = {
+      name: payload.name || payload.given_name,
+      email: payload.email,
+      avatar: payload.picture
+    };
+
+    localStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('userProfile', JSON.stringify(userProfile));
+
+    statusBox.classList.add('show');
+    statusBox.textContent = 'Google Sign-In Successful! Redirecting…';
+
+    setTimeout(() => {
+      window.location.href = '../index.html';
+    }, 1000);
+  }
+}
+
+window.onload = function () {
+  if (window.google) {
+    google.accounts.id.initialize({
+      client_id: "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com", // Yahan apna Google Client ID dalein
+      callback: handleGoogleResponse
+    });
+
+    google.accounts.id.renderButton(
+      document.getElementById("googleBtnWrapper"),
+      { theme: "outline", size: "large", width: "100%", text: "continue_with" }
+    );
+  }
+};
