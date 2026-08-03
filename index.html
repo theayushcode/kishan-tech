@@ -4,6 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Kishan - Tech · Season-wise Indian Crop Guide</title>
+  <script>
+  // Agar user logged-in nahi hai toh login page par bhejo
+  if (!localStorage.getItem('isLoggedIn')) {
+    window.location.href = 'login page/login.html';
+  }
+</script>
   <meta name="description" content="Kishan - Tech — explore 150 crops grown across Summer, Winter and Rain (monsoon) seasons in India with images, descriptions, rainfall needs and growing regions." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

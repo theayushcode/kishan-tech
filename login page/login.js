@@ -1,3 +1,8 @@
+/* ==========================================================
+   login.js — Kishan - Tech Authentication Logic
+   Connects to Node.js + MySQL Backend API (http://localhost:3000)
+   ========================================================== */
+
 const form       = document.getElementById('loginForm');
 const emailInput = document.getElementById('email');
 const pwInput    = document.getElementById('password');
@@ -9,6 +14,7 @@ const toggleBtn  = document.getElementById('togglePw');
 const submitBtn  = document.getElementById('submitBtn');
 const statusBox  = document.getElementById('statusBox');
 
+// ---------- Password Hide / Show Toggle ----------
 toggleBtn.addEventListener('click', () => {
   const isPw = pwInput.type === 'password';
   pwInput.type = isPw ? 'text' : 'password';
@@ -16,8 +22,9 @@ toggleBtn.addEventListener('click', () => {
   toggleBtn.setAttribute('aria-label', isPw ? 'Hide password' : 'Show password');
 });
 
+// ---------- Input Validation Helpers ----------
 function validLogin(v){
-  // accepts an email OR a simple 10-digit phone number
+  // Accepts a valid email address OR a 10-digit phone number
   const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
   const isPhone = /^[0-9]{10}$/.test(v.replace(/\s|-/g, ''));
   return isEmail || isPhone;
@@ -33,21 +40,25 @@ function setError(shell, errEl, msg){
   }
 }
 
+// Clear error state on input change
 emailInput.addEventListener('input', () => {
   if(emailShell.classList.contains('error') && validLogin(emailInput.value)){
     setError(emailShell, emailErr, '');
   }
 });
+
 pwInput.addEventListener('input', () => {
   if(pwShell.classList.contains('error') && pwInput.value.length >= 6){
     setError(pwShell, pwErr, '');
   }
 });
 
+// ---------- Form Submission & API Fetch ----------
 form.addEventListener('submit', (e) => {
   e.preventDefault();
   let ok = true;
 
+  // Validate Email / Phone
   if(!validLogin(emailInput.value)){
     setError(emailShell, emailErr, 'Enter a valid email or 10-digit phone number.');
     ok = false;
@@ -55,6 +66,7 @@ form.addEventListener('submit', (e) => {
     setError(emailShell, emailErr, '');
   }
 
+  // Validate Password Length
   if(pwInput.value.length < 6){
     setError(pwShell, pwErr, 'Password must be at least 6 characters.');
     ok = false;
@@ -64,25 +76,59 @@ form.addEventListener('submit', (e) => {
 
   if(!ok) return;
 
+  // UI Loading State
   submitBtn.classList.add('loading');
   submitBtn.disabled = true;
   submitBtn.querySelector('.btn-label').textContent = 'Signing in…';
 
-  // TODO: replace this with a real request to your auth/login endpoint
-  setTimeout(() => {
+  // Fetch API call to Node.js + MySQL Server
+  fetch('http://localhost:3000/api/login', {
+    method: 'POST',
+    headers: { 
+      'Content-Type': 'application/json' 
+    },
+    body: JSON.stringify({
+      email: emailInput.value,
+      password: pwInput.value
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    // Reset Button State
     submitBtn.classList.remove('loading');
     submitBtn.disabled = false;
     submitBtn.querySelector('.btn-label').textContent = 'Sign In';
-    statusBox.classList.add('show');
 
-    // redirect back to the homepage after a successful sign-in
-    setTimeout(() => { window.location.href = '../index.html'; }, 1100);
-  }, 1200);
+    if (data.success) {
+      // Show Success Message
+      statusBox.classList.add('show');
+      statusBox.textContent = 'Signed in — taking you to the home page…';
+
+      // Save session in Browser LocalStorage
+      localStorage.setItem('isLoggedIn', 'true');
+
+      // Redirect to main index.html
+      setTimeout(() => {
+        window.location.href = '../index.html';
+      }, 1000);
+    } else {
+      // Display Server Invalid Credentials Message
+      setError(pwShell, pwErr, data.message || 'Invalid Email or Password.');
+    }
+  })
+  .catch(err => {
+    // Handle Server Offline / Network Error
+    submitBtn.classList.remove('loading');
+    submitBtn.disabled = false;
+    submitBtn.querySelector('.btn-label').textContent = 'Sign In';
+    
+    setError(pwShell, pwErr, 'Server connection failed. Make sure backend (node server.js) is running!');
+  });
 });
 
+// ---------- OAuth Button Mock Click Handler ----------
 document.querySelectorAll('.auth-oauth button').forEach(btn => {
   btn.addEventListener('click', () => {
-    // TODO: wire this up to your real OAuth provider flow
     btn.style.borderColor = '#E8C468';
     setTimeout(() => btn.style.borderColor = '', 400);
   });
