@@ -1,28 +1,26 @@
-/* ==========================================================
-   server.js — Kishan - Tech Express Backend API
-   Running on http://localhost:5000
-   ========================================================== */
-
 const express = require('express');
 const mysql = require('mysql2');
 const bcrypt = require('bcryptjs');
 const cors = require('cors');
 
 const app = express();
-const PORT = 5000;
+
+// Render dynmically assigns PORT via process.env.PORT
+const PORT = process.env.PORT || 5000;
 
 // Middlewares
 app.use(cors());
 app.use(express.json());
 
 // ==========================================
-// 1. MySQL Connection Setup
+// 1. MySQL Connection Setup (Cloud Database)
 // ==========================================
 const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',           // Apna MySQL username
-    password: 'AYUSH@123', // 👈 Yahan apna REAL MySQL Password daalein
-    database: 'kishan_tech'
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || 'AYUSH@123',
+    database: process.env.DB_NAME || 'kishan_tech',
+    port: process.env.DB_PORT || 3306
 });
 
 db.connect((err) => {
@@ -34,7 +32,7 @@ db.connect((err) => {
 });
 
 // ==========================================
-// 2. REGISTER API (Create New Account)
+// 2. REGISTER API
 // ==========================================
 app.post('/api/register', async (req, res) => {
     const { name, email, password } = req.body;
@@ -55,10 +53,8 @@ app.post('/api/register', async (req, res) => {
                 return res.status(400).json({ success: false, message: 'Email is already registered!' });
             }
 
-            // Hash Password
             const hashedPassword = await bcrypt.hash(password, 10);
 
-            // Insert User
             const insertQuery = 'INSERT INTO users (name, email, password) VALUES (?, ?, ?)';
             db.query(insertQuery, [name, email, hashedPassword], (err, result) => {
                 if (err) {
@@ -77,7 +73,7 @@ app.post('/api/register', async (req, res) => {
 });
 
 // ==========================================
-// 3. LOGIN API (Sign In)
+// 3. LOGIN API
 // ==========================================
 app.post('/api/login', (req, res) => {
     const { email, password } = req.body;
@@ -98,8 +94,6 @@ app.post('/api/login', (req, res) => {
         }
 
         const user = results[0];
-        
-        // Compare Hashed Password
         const isMatch = await bcrypt.compare(password, user.password);
 
         if (isMatch) {
@@ -119,5 +113,5 @@ app.post('/api/login', (req, res) => {
 // 4. Server Start
 // ==========================================
 app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    console.log(`🚀 Server running on port ${PORT}`);
 });
