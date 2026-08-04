@@ -5,7 +5,7 @@ const cors = require('cors');
 
 const app = express();
 
-// Render dynmically assigns PORT via process.env.PORT
+// Render dynamically assigns PORT via process.env.PORT
 const PORT = process.env.PORT || 5000;
 
 // Middlewares
@@ -13,21 +13,24 @@ app.use(cors());
 app.use(express.json());
 
 // ==========================================
-// 1. MySQL Connection Setup (Cloud Database)
+// 1. MySQL Connection Setup (Aiven Cloud Database)
 // ==========================================
 const db = mysql.createConnection({
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || 'AYUSH@123',
-    database: process.env.DB_NAME || 'kishan_tech',
-    port: process.env.DB_PORT || 3306
+    host: process.env.DB_HOST || 'mysql-1347603b-kishan-tech.f.aivencloud.com',
+    user: process.env.DB_USER || 'avnadmin',
+    password: process.env.DB_PASSWORD || 'AVNS_my4Rx5J1AhtihxOmpY1',
+    database: process.env.DB_NAME || 'defaultdb',
+    port: process.env.DB_PORT || 25152,
+    ssl: {
+        rejectUnauthorized: false // Aiven Cloud DB ke liye SSL zaroori hai
+    }
 });
 
 db.connect((err) => {
     if (err) {
         console.error('❌ Database connection failed:', err.message);
     } else {
-        console.log('✅ Connected to MySQL Database!');
+        console.log('✅ Connected to Aiven MySQL Cloud Database!');
     }
 });
 
