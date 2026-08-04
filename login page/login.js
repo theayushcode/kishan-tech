@@ -1,6 +1,6 @@
 /* ==========================================================
    login.js — Kishan - Tech Authentication Logic
-   Connects to Node.js + MySQL Backend API (http://localhost:5000)
+   Connects to Render Live Backend API
    ========================================================== */
 
 const form       = document.getElementById('loginForm');
@@ -87,8 +87,8 @@ if (form) {
     submitBtn.disabled = true;
     submitBtn.querySelector('.btn-label').textContent = 'Signing in…';
 
-    // Fetch API call to Node.js + MySQL Server (Port 5000)
-    fetch('http://localhost:5000/api/login', {
+    // Fetch API call to Render Backend Server
+    fetch('https://kishan-tech-backend.onrender.com/api/login', {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json' 
@@ -134,7 +134,7 @@ if (form) {
       submitBtn.classList.remove('loading');
       submitBtn.disabled = false;
       submitBtn.querySelector('.btn-label').textContent = 'Sign In';
-      setError(pwShell, pwErr, 'Server connection failed. Make sure backend is running!');
+      setError(pwShell, pwErr, 'Server connection failed. Please try again!');
     });
   });
 }
