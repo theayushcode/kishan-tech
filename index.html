@@ -4,20 +4,24 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Kishan - Tech · Season-wise Indian Crop Guide</title>
+
+  <!-- USER LOGIN CHECK: Agar user logged in nahi hai toh use login page par redirect kar dega -->
   <script>
-    // Agar user logged-in nahi hai toh login page par bhejo
     if (!localStorage.getItem('isLoggedIn')) {
       window.location.href = 'login page/login.html';
     }
   </script>
+
+  <!-- SEO & Font Links -->
   <meta name="description" content="Kishan - Tech — explore 150 crops grown across Summer, Winter and Rain (monsoon) seasons in India with images, descriptions, rainfall needs and growing regions." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌾</text></svg>" />
+
   <style>
-    /* Header login link styling */
+    /* Header me Login Link ki styling */
     .header-login-link{
       margin-left: 1rem;
       padding: .5rem 1.1rem;
@@ -36,6 +40,7 @@
 <body>
   <div id="app">
 
+    <!-- BACKGROUND MUSIC PLAYER: Background music play/pause karne ke liye audio button -->
     <div class="music-player" id="music-player">
       <button class="music-btn playing" id="music-toggle" title="Play / Pause music">
         <span class="music-icon">🎵</span>
@@ -46,6 +51,7 @@
       <source src="assets/audio/music.mp3" type="audio/mpeg">
     </audio>
 
+    <!-- PAGE LOADER: Jab tak page load ho raha hota hai tab tak ye spinner dikhta hai -->
     <div class="loader" id="loader">
       <div>
         <div class="spin"></div>
@@ -53,21 +59,29 @@
       </div>
     </div>
 
+    <!-- NAVBAR / HEADER: App ka top navigation bar (Logo, Page Links, User Profile, Sign Out) -->
     <header class="brand-bar">
       <div class="brand" id="home-btn" title="Go to home">
         <span class="logo">🌾</span>
         <span class="brand-text">Kishan&nbsp;<span class="brand-sep">·</span>&nbsp;Tech</span>
       </div>
+      
+      <!-- NAV LINKS: Alag-alag sections me switch karne ke liye menu buttons -->
       <nav class="top-nav" id="top-nav">
         <button class="nav-link active" data-nav="welcome">Home</button>
         <button class="nav-link" data-nav="recommend">🌱 Smart Finder</button>
+        <button class="nav-link" data-nav="favorites">❤️ Favorites</button>
         <button class="nav-link" data-nav="season">Seasons</button>
         <button class="nav-link" data-nav="agri">Festivals</button>
         <button class="nav-link" data-nav="india-map">India Map</button>
       </nav>
+
+      <!-- BREADCRUMB: Abhi user kis page par hai wo text dikhane ke liye -->
       <div class="crumb">
         <span id="crumb-current" class="current">Home</span>
       </div>
+
+      <!-- USER PROFILE DROPDOWN: User ka naam, email aur Logout ka option yahan milta hai -->
       <div class="user-profile-wrapper" id="userProfileWrapper">
         <button class="user-profile-btn" id="userProfileBtn">
           <img src="" alt="User" id="userAvatar" class="user-avatar" style="display:none;" />
@@ -87,8 +101,10 @@
       <a href="login page/login.html" class="header-login-link">Login</a>
     </header>
 
+    <!-- WELCOME VIEW (HOME PAGE): Landing section, Weather, Mandi Rates aur Options cards yahan hain -->
     <section class="view active" id="welcome-view">
 
+      <!-- Hero Intro: Main Title aur website ke baare me description -->
       <div class="welcome-part welcome-part-1">
         <div class="welcome-inner">
           <span class="welcome-tag">🌾 Indian Agriculture · Season-wise Guide</span>
@@ -112,6 +128,7 @@
         <div class="scroll-hint" id="scroll-hint">Explore the options ↓</div>
       </div>
 
+      <!-- LIVE WEATHER WIDGET: Real-time city weather aur temperature dikhane ke liye API widget -->
       <div class="weather-widget-card" style="max-width: 1000px; margin: 30px auto 10px; padding: 22px 28px; background: linear-gradient(135deg, #16382c, #2a5245); color: #fff; border-radius: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.2);">
         <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 18px;">
           <div>
@@ -135,6 +152,7 @@
         </div>
       </div>
 
+      <!-- MANDI RATES TABLE: Daily Mandi Bhav/Market Prices show karne ke liye section -->
       <div class="mandi-price-card" style="max-width: 1000px; margin: 25px auto; padding: 24px; background: #ffffff; border-radius: 18px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 20px;">
           <div>
@@ -170,12 +188,14 @@
                 <th style="padding: 12px 16px; border-radius: 0 8px 8px 0;">Modal Price (औसत भाव)</th>
               </tr>
             </thead>
+            <!-- Dynamic data JavaScript se render hota hai -->
             <tbody id="mandiTableBody">
             </tbody>
           </table>
         </div>
       </div>
 
+      <!-- MAIN FEATURES CARDS: Homepage par 4 main features ka shortcut navigation cards -->
       <div class="welcome-part welcome-part-2">
         <div class="welcome-options-head">
           <span class="eyebrow">Where would you like to go?</span>
@@ -212,6 +232,7 @@
 
     </section>
 
+    <!-- RECOMMENDATION VIEW: Season aur Soil choose karke sahi crop find karne ka form -->
     <section class="view" id="recommend-view">
       <div class="section-head">
         <div class="eyebrow">Smart Agriculture</div>
@@ -250,6 +271,7 @@
 
         </form>
 
+        <!-- Recommended crops result grid -->
         <div id="recommendationResults" class="crop-grid" style="margin-top: 30px; padding: 0;">
         </div>
       </div>
@@ -260,6 +282,25 @@
       </div>
     </section>
 
+    <!-- FAVORITES VIEW: User dwara bookmarked (❤️) ki gayi crops yahan dikhti hain -->
+    <section class="view" id="favorites-view">
+      <div class="section-head">
+        <div class="eyebrow">Your Personal Collection</div>
+        <h2>❤️ Saved / Favorite Crops / पसंदीदा फसलें</h2>
+        <p>Crops you bookmarked for quick reference appear here.</p>
+      </div>
+
+      <div class="crop-grid" id="favorites-grid" style="max-width: 1180px; margin: 26px auto; padding: 0 24px;">
+        <!-- Saved crops JS se render hoti hain -->
+      </div>
+
+      <div class="map-bottom-nav">
+        <button class="btn" id="fav-back-welcome">← Back to Home</button>
+        <button class="btn btn-primary" id="fav-go-seasons">Browse All Seasons →</button>
+      </div>
+    </section>
+
+    <!-- INDIA MAP VIEW: Interactive India Map jisse dekha ja sake ki kahan konsi fasal ugti hai -->
     <section class="view" id="india-map-view">
       <div class="section-head">
         <div class="eyebrow">Where Crops Grow</div>
@@ -304,6 +345,7 @@
       </div>
     </section>
 
+    <!-- FESTIVALS VIEW: Indian farming aur harvest festivals ki jankari -->
     <section class="view" id="agri-view">
       <div class="agri-hero">
         <div class="agri-hero-inner">
@@ -347,6 +389,7 @@
       </div>
     </section>
 
+    <!-- SEASON SELECT VIEW: Summer, Winter, Rain seasons chunne ke liye cards -->
     <section class="view" id="season-view">
       <div class="section-head">
         <div class="eyebrow">Choose a Season</div>
@@ -356,6 +399,7 @@
       <div class="season-grid" id="season-grid"></div>
     </section>
 
+    <!-- CROPS LIST VIEW: Selected season ki saari crops ki list, search bar ke saath -->
     <section class="view" id="crops-view">
       <div class="crops-hero" id="crops-hero">
         <div class="bg"></div>
@@ -377,6 +421,7 @@
       <div class="crop-grid" id="crop-grid"></div>
     </section>
 
+    <!-- CROP DETAIL VIEW: Single crop ki complete details (Soil, Rainfall, Regions, Hindi name) -->
     <section class="view" id="crop-detail-view">
       <div class="detail-hero" id="detail-hero">
         <div class="bg"></div>
@@ -424,17 +469,42 @@
           </div>
         </div>
 
+        <!-- FARMER COMMUNITY & REVIEWS SECTION: Farmer Discussion aur Comments Form -->
+        <div class="detail-card reviews-card" style="margin-top: 25px; padding: 24px; background: #ffffff; border-radius: 18px; box-shadow: 0 4px 20px rgba(0,0,0,0.06);">
+          <h3 style="color: #173a30; font-size: 1.3rem; margin-bottom: 6px;">💬 Farmer Discussion & Tips / फसल चर्चा</h3>
+          <p style="color: #5d716a; font-size: 0.9rem; margin-bottom: 20px;">Share your farming experience, tips, or questions about this crop.</p>
+
+          <!-- Comment Form -->
+          <form id="cropReviewForm" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 25px;">
+            <input type="text" id="reviewAuthor" placeholder="Your Name / आपका नाम" required style="padding: 10px 14px; border-radius: 8px; border: 1.5px solid #dcdcdc; outline: none; font-size: 0.95rem;">
+            <textarea id="reviewComment" rows="3" placeholder="Share your experience or tips / अपना अनुभव या सुझाव लिखें..." required style="padding: 10px 14px; border-radius: 8px; border: 1.5px solid #dcdcdc; outline: none; font-size: 0.95rem; resize: vertical;"></textarea>
+            <button type="submit" style="align-self: flex-start; padding: 10px 22px; background: #2e8b57; color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">
+              ✍️ Post Comment
+            </button>
+          </form>
+
+          <hr style="border: 0; border-top: 1px solid #eee; margin-bottom: 20px;" />
+
+          <!-- Reviews List Container -->
+          <div id="cropReviewsList" style="display: flex; flex-direction: column; gap: 14px;">
+            <!-- Comments JS se dynamic load honge -->
+          </div>
+        </div>
+
         <div class="bottom-nav">
           <button class="btn" id="detail-back-bottom">← Back to season crops</button>
         </div>
       </div>
     </section>
 
+    <!-- FOOTER: Footer copyright bar -->
     <footer class="app-footer">
       <p><strong>🌾 Kishan - Tech</strong> — A season-wise guide to Indian crops</p>
     </footer>
 
   </div>
+
+  <!-- JS SCRIPTS: Application Data and Logic -->
   <script src="javascript/data.js"></script>
   <script src="javascript/app.js"></script>
 </body>

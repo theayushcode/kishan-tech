@@ -1,6 +1,6 @@
 /* ============================================================
    KISHAN - TECH — Application Logic
-   Views: welcome -> recommend -> india-map -> agri -> season-select -> crops-list -> crop-detail
+   Views: welcome -> recommend -> favorites -> india-map -> agri -> season-select -> crops-list -> crop-detail
    ============================================================ */
 
 const SEASON_META = {
@@ -87,6 +87,7 @@ const VIEW_HISTORY = [];
 const NAV_TAB_OF_VIEW = {
   "welcome-view": "welcome",
   "recommend-view": "recommend",
+  "favorites-view": "favorites",
   "season-view": "season",
   "agri-view": "agri",
   "india-map-view": "india-map",
@@ -149,6 +150,7 @@ window.addEventListener("popstate", (e) => {
 
 function goWelcome() { navigate("welcome-view"); currentSeason = null; currentCrop = null; }
 function goRecommend() { navigate("recommend-view"); currentSeason = null; currentCrop = null; }
+function goFavorites() { renderFavorites(); navigate("favorites-view"); currentSeason = null; currentCrop = null; }
 function goSeasons() { navigate("season-view"); currentSeason = null; currentCrop = null; }
 function goIndiaMap() { navigate("india-map-view"); currentSeason = null; currentCrop = null; }
 function goAgri() { navigate("agri-view"); currentSeason = null; currentCrop = null; }
@@ -176,6 +178,7 @@ function updateCrumb() {
   } else {
     const labels = {
       "recommend-view": "Smart Finder",
+      "favorites-view": "Favorites",
       "season-view": "Seasons",
       "india-map-view": "India Crop Map",
       "agri-view": "Agriculture & Festivals",
@@ -185,6 +188,86 @@ function updateCrumb() {
     trail = labels[currentView] || "Home";
   }
   c.textContent = trail;
+}
+
+/* ---------- FAVORITES LOGIC ---------- */
+function getFavorites() {
+  const favs = localStorage.getItem('userFavorites');
+  return favs ? JSON.parse(favs) : [];
+}
+
+function isFavorite(cropName) {
+  return getFavorites().some(f => f.name === cropName);
+}
+
+function toggleFavorite(cropName, seasonKey, event) {
+  if (event) event.stopPropagation();
+  let favs = getFavorites();
+  const index = favs.findIndex(f => f.name === cropName);
+
+  if (index > -1) {
+    favs.splice(index, 1);
+  } else {
+    favs.push({ name: cropName, season: seasonKey });
+  }
+
+  localStorage.setItem('userFavorites', JSON.stringify(favs));
+
+  if (currentView === 'favorites-view') {
+    renderFavorites();
+  } else if (currentView === 'crops-view' && currentSeason) {
+    renderCropCards(currentSeason, $("#crop-search") ? $("#crop-search").value.trim().toLowerCase() : "");
+  } else if (currentView === 'recommend-view') {
+    const form = $("#recommenderForm");
+    if (form) form.dispatchEvent(new Event('submit'));
+  }
+}
+
+function renderFavorites() {
+  const grid = $("#favorites-grid");
+  if (!grid) return;
+
+  const favs = getFavorites();
+  grid.innerHTML = "";
+
+  if (favs.length === 0) {
+    grid.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding: 50px 20px; color:#5d716a;">
+      <h3>💔 No Favorite Crops Saved Yet</h3>
+      <p style="margin-top: 8px;">Explore crops and click the Heart (❤️) icon on any card to save it here!</p>
+    </div>`;
+    return;
+  }
+
+  favs.forEach((fav) => {
+    const seasonCrops = CROPS[fav.season] || [];
+    const crop = seasonCrops.find(c => c.name === fav.name);
+    if (!crop) return;
+
+    const card = el("div", "crop-card");
+    card.onclick = () => goCropDetail(fav.season, crop.name);
+    card.innerHTML = `
+      <div class="thumb" style="position:relative;">
+        <img src="${crop.img}" alt="${escapeHtml(crop.name)}" loading="lazy"
+             onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'400\\' height=\\'300\\'><rect width=\\'100%25\\' height=\\'100%25\\' fill=\\'%23eef3f0\\'/><text x=\\'50%25\\' y=\\'50%25\\' font-family=\\'sans-serif\\' font-size=\\'22\\' fill=\\'%235a8a72\\' text-anchor=\\'middle\\' dy=\\'.35em\\'>${encodeURIComponent(crop.name)}</text></svg>'">
+        <button onclick="toggleFavorite('${escapeHtml(crop.name)}', '${fav.season}', event)" 
+                title="Remove from favorites"
+                style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.6); color:#ff4757; border:none; border-radius:50%; width:36px; height:36px; font-size:1.2rem; cursor:pointer; display:grid; place-items:center;">
+          ❤️
+        </button>
+      </div>
+      <div class="body">
+        <div class="name">${escapeHtml(crop.name)}</div>
+        <div class="hindi-name">${escapeHtml(crop.hindi || "")}</div>
+        <div class="sci">${escapeHtml(crop.wiki)}</div>
+        <div class="tags">
+          <span class="tag rain">🌧️ ${escapeHtml(crop.rain)}</span>
+          <span class="tag soil">🪴 ${shortSoil(crop.soil)}</span>
+        </div>
+        <div class="crop-desc">${escapeHtml(crop.desc)}</div>
+        <div class="more">View details →</div>
+      </div>`;
+    grid.appendChild(card);
+  });
 }
 
 /* ---------- India Map Filtering ---------- */
@@ -289,14 +372,21 @@ function renderCropCards(season, query) {
     grid.innerHTML = `<div class="no-results">😣 No crops match “${escapeHtml(query)}”. Try another name.</div>`;
     return;
   }
+
   filtered.forEach((crop, i) => {
+    const favActive = isFavorite(crop.name);
     const card = el("div", "crop-card");
     card.style.animationDelay = `${Math.min(i * 0.03, 0.5)}s`;
     card.onclick = () => goCropDetail(season, crop.name);
     card.innerHTML = `
-      <div class="thumb">
+      <div class="thumb" style="position:relative;">
         <img src="${crop.img}" alt="${escapeHtml(crop.name)}" loading="lazy"
              onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'400\\' height=\\'300\\'><rect width=\\'100%25\\' height=\\'100%25\\' fill=\\'%23eef3f0\\'/><text x=\\'50%25\\' y=\\'50%25\\' font-family=\\'sans-serif\\' font-size=\\'22\\' fill=\\'%235a8a72\\' text-anchor=\\'middle\\' dy=\\'.35em\\'>${encodeURIComponent(crop.name)}</text></svg>'">
+        <button onclick="toggleFavorite('${escapeHtml(crop.name)}', '${season}', event)" 
+                title="${favActive ? 'Remove from favorites' : 'Save to favorites'}"
+                style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.5); color:${favActive ? '#ff4757' : '#ffffff'}; border:none; border-radius:50%; width:36px; height:36px; font-size:1.1rem; cursor:pointer; display:grid; place-items:center;">
+          ${favActive ? '❤️' : '🤍'}
+        </button>
       </div>
       <div class="body">
         <div class="name">${escapeHtml(crop.name)}</div>
@@ -343,6 +433,9 @@ function renderCropDetail(season, crop) {
   if ($("#detail-region")) $("#detail-region").textContent = crop.region;
   if ($("#detail-season-full")) $("#detail-season-full").innerHTML = `${m.icon} ${m.label} Season<br><span style="font-weight:400;opacity:.8;font-size:.92rem">${m.tagline} (${m.month})</span>`;
   if ($("#detail-back-bottom")) $("#detail-back-bottom").onclick = () => goCrops(season);
+
+  // Initialize farmer discussion & reviews system for this crop
+  initCropReviewSystem(crop.name);
 }
 
 /* ---------- Crop Recommendation System Logic ---------- */
@@ -377,12 +470,18 @@ function initCropRecommender() {
     }
 
     recommended.forEach((crop) => {
+      const favActive = isFavorite(crop.name);
       const card = el("div", "crop-card");
       card.onclick = () => goCropDetail(selectedSeason, crop.name);
       card.innerHTML = `
-        <div class="thumb">
+        <div class="thumb" style="position:relative;">
           <img src="${crop.img}" alt="${escapeHtml(crop.name)}" loading="lazy"
                onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'400\\' height=\\'300\\'><rect width=\\'100%25\\' height=\\'100%25\\' fill=\\'%23eef3f0\\'/><text x=\\'50%25\\' y=\\'50%25\\' font-family=\\'sans-serif\\' font-size=\\'22\\' fill=\\'%235a8a72\\' text-anchor=\\'middle\\' dy=\\'.35em\\'>${encodeURIComponent(crop.name)}</text></svg>'">
+          <button onclick="toggleFavorite('${escapeHtml(crop.name)}', '${selectedSeason}', event)" 
+                  title="${favActive ? 'Remove from favorites' : 'Save to favorites'}"
+                  style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.5); color:${favActive ? '#ff4757' : '#ffffff'}; border:none; border-radius:50%; width:36px; height:36px; font-size:1.1rem; cursor:pointer; display:grid; place-items:center;">
+            ${favActive ? '❤️' : '🤍'}
+          </button>
         </div>
         <div class="body">
           <div class="name">${escapeHtml(crop.name)}</div>
@@ -400,7 +499,7 @@ function initCropRecommender() {
   });
 }
 
-/* ---------- Live Weather Widget Logic (Open-Meteo API) ---------- */
+/* ---------- Live Weather Widget Logic ---------- */
 async function fetchWeather(cityName = 'Delhi') {
   const cityEl = document.getElementById('weatherCity');
   const tempEl = document.getElementById('weatherTemp');
@@ -633,6 +732,7 @@ function init() {
       const nav = b.dataset.nav;
       if (nav === "welcome") goWelcome();
       else if (nav === "recommend") goRecommend();
+      else if (nav === "favorites") goFavorites();
       else if (nav === "season") goSeasons();
       else if (nav === "agri") goAgri();
       else if (nav === "india-map") goIndiaMap();
@@ -645,6 +745,10 @@ function init() {
   // Recommend view bottom buttons
   if ($("#rec-back-welcome")) $("#rec-back-welcome").onclick = () => goWelcome();
   if ($("#rec-go-seasons")) $("#rec-go-seasons").onclick = () => goSeasons();
+
+  // Favorites view bottom buttons
+  if ($("#fav-back-welcome")) $("#fav-back-welcome").onclick = () => goWelcome();
+  if ($("#fav-go-seasons")) $("#fav-go-seasons").onclick = () => goSeasons();
 
   // India map page
   if ($("#map-back-welcome")) $("#map-back-welcome").onclick = () => goWelcome();
@@ -735,3 +839,80 @@ function initUserProfile() {
 document.addEventListener('DOMContentLoaded', () => {
   initUserProfile();
 });
+
+/* ---------- FARMER REVIEWS & COMMENTS LOGIC ---------- */
+function getCropReviews(cropName) {
+  const allReviews = localStorage.getItem('cropReviews');
+  const reviewsObj = allReviews ? JSON.parse(allReviews) : {};
+  return reviewsObj[cropName] || [];
+}
+
+function saveCropReview(cropName, author, comment) {
+  const allReviews = localStorage.getItem('cropReviews');
+  const reviewsObj = allReviews ? JSON.parse(allReviews) : {};
+
+  if (!reviewsObj[cropName]) {
+    reviewsObj[cropName] = [];
+  }
+
+  reviewsObj[cropName].unshift({
+    author: author,
+    comment: comment,
+    date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+  });
+
+  localStorage.setItem('cropReviews', JSON.stringify(reviewsObj));
+}
+
+function renderCropReviews(cropName) {
+  const reviewsList = document.getElementById('cropReviewsList');
+  if (!reviewsList) return;
+
+  const reviews = getCropReviews(cropName);
+  reviewsList.innerHTML = '';
+
+  if (reviews.length === 0) {
+    reviewsList.innerHTML = `<p style="color: #888; font-style: italic; font-size: 0.9rem;">No discussions yet. Be the first farmer to share a tip!</p>`;
+    return;
+  }
+
+  reviews.forEach(r => {
+    const item = document.createElement('div');
+    item.style.padding = '12px 16px';
+    item.style.background = '#f9fbf9';
+    item.style.borderRadius = '10px';
+    item.style.borderLeft = '4px solid #2e8b57';
+
+    item.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+        <strong style="color: #173a30; font-size: 0.95rem;">👤 ${escapeHtml(r.author)}</strong>
+        <span style="font-size: 0.8rem; color: #888;">${r.date}</span>
+      </div>
+      <p style="color: #444; font-size: 0.9rem; margin: 0; line-height: 1.4;">${escapeHtml(r.comment)}</p>
+    `;
+    reviewsList.appendChild(item);
+  });
+}
+
+function initCropReviewSystem(cropName) {
+  renderCropReviews(cropName);
+
+  const form = document.getElementById('cropReviewForm');
+  if (!form) return;
+
+  form.onsubmit = (e) => {
+    e.preventDefault();
+    const authorInput = document.getElementById('reviewAuthor');
+    const commentInput = document.getElementById('reviewComment');
+
+    const author = authorInput.value.trim();
+    const comment = commentInput.value.trim();
+
+    if (author && comment) {
+      saveCropReview(cropName, author, comment);
+      renderCropReviews(cropName);
+      authorInput.value = '';
+      commentInput.value = '';
+    }
+  };
+}
