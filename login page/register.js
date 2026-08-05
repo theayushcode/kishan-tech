@@ -62,15 +62,15 @@ if (form) {
     submitBtn.querySelector('.btn-label').textContent = 'Creating Account...';
 
     // Fetch API call to Live Render Backend Server
-    fetch('https://kishan-tech-backend.onrender.com/api/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: nameInput.value.trim(),
-        email: emailInput.value.trim(),
-        password: pwInput.value
-      })
-    })
+   fetch('https://kishan-tech.onrender.com/api/register', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    name: nameInput.value.trim(),
+    email: emailInput.value.trim(),
+    password: pwInput.value
+  })
+})
     .then(res => res.json())
     .then(data => {
       submitBtn.classList.remove('loading');
