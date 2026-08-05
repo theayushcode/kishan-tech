@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const mysql = require('mysql2');
 const bcrypt = require('bcryptjs');
@@ -5,7 +6,7 @@ const cors = require('cors');
 
 const app = express();
 
-// Render dynamically assigns PORT via process.env.PORT
+// Port allocation (Render / Local environment)
 const PORT = process.env.PORT || 5000;
 
 // Middlewares
@@ -13,25 +14,30 @@ app.use(cors());
 app.use(express.json());
 
 // ==========================================
-/// ==========================================
-// 1. MySQL Connection Setup (Aiven Cloud Database)
+// 1. MySQL / TiDB Cloud Connection Setup
 // ==========================================
-const db = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    port: process.env.DB_PORT,
-    ssl: {
-        rejectUnauthorized: false // Aiven Cloud DB ke liye SSL zaroori hai
-    }
-});
+const dbConfig = {
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'test',
+    port: parseInt(process.env.DB_PORT, 10) || 3306
+};
+
+// Cloud Database (TiDB / Aiven / Remote) ke liye SSL Enable Karein
+if (process.env.DB_HOST && process.env.DB_HOST !== 'localhost' && process.env.DB_HOST !== '127.0.0.1') {
+    dbConfig.ssl = { 
+        rejectUnauthorized: false 
+    };
+}
+
+const db = mysql.createConnection(dbConfig);
 
 db.connect((err) => {
     if (err) {
         console.error('❌ Database connection failed:', err.message);
     } else {
-        console.log('✅ Connected to Aiven MySQL Cloud Database!');
+        console.log('✅ Connected to MySQL / TiDB Database Successfully!');
     }
 });
 
