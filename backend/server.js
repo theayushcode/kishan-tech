@@ -14,30 +14,38 @@ app.use(cors());
 app.use(express.json());
 
 // ==========================================
-// 1. MySQL / TiDB Cloud Connection Setup
+// 1. MySQL / TiDB Connection Pool (Fixes Connection Lost Crashes)
 // ==========================================
 const dbConfig = {
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME || 'test',
-    port: parseInt(process.env.DB_PORT, 10) || 3306
+    port: parseInt(process.env.DB_PORT, 10) || 3306,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
+    enableKeepAlive: true,
+    keepAliveInitialDelay: 10000
 };
 
-// Cloud Database (TiDB / Aiven / Remote) ke liye SSL Enable Karein
+// Cloud Database SSL Configuration
 if (process.env.DB_HOST && process.env.DB_HOST !== 'localhost' && process.env.DB_HOST !== '127.0.0.1') {
     dbConfig.ssl = { 
         rejectUnauthorized: false 
     };
 }
 
-const db = mysql.createConnection(dbConfig);
+// Single connection ki jagah createPool function
+const db = mysql.createPool(dbConfig);
 
-db.connect((err) => {
+// Initial Test Connection
+db.getConnection((err, connection) => {
     if (err) {
         console.error('❌ Database connection failed:', err.message);
     } else {
         console.log('✅ Connected to MySQL / TiDB Database Successfully!');
+        connection.release(); // release connection back to pool
     }
 });
 
