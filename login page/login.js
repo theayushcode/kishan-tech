@@ -87,13 +87,12 @@ if (form) {
     submitBtn.disabled = true;
     submitBtn.querySelector('.btn-label').textContent = 'Signing in…';
 
+    // Fetch API call to Render Live Backend
     fetch('https://kishan-tech.onrender.com/api/login', {
-  method: 'POST',
-  headers: { 
-    'Content-Type': 'application/json' 
-  },
-  body: JSON.stringify({ email, password })
-})
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json' 
+      },
       body: JSON.stringify({
         email: emailInput.value.trim(),
         password: pwInput.value
