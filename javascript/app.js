@@ -1,6 +1,6 @@
 /* ============================================================
    KISHAN - TECH — Application Logic
-   Views: welcome -> recommend -> favorites -> india-map -> agri -> season-select -> crops-list -> crop-detail
+   Views: welcome -> recommend -> favorites -> admin -> india-map -> agri -> season-select -> crops-list -> crop-detail
    ============================================================ */
 
 const SEASON_META = {
@@ -82,12 +82,29 @@ const el = (tag, cls, html) => {
   return n;
 };
 
+/* ---------- Custom Crops Persistence (Merge LocalStorage Crops) ---------- */
+function mergeCustomCrops() {
+  const custom = localStorage.getItem('customCrops');
+  if (!custom) return;
+  try {
+    const list = JSON.parse(custom);
+    list.forEach(crop => {
+      if (CROPS[crop.season] && !CROPS[crop.season].some(c => c.name === crop.name)) {
+        CROPS[crop.season].unshift(crop);
+      }
+    });
+  } catch (e) {
+    console.error("Error merging custom crops", e);
+  }
+}
+
 /* ---------- Navigation & Browser Back Logic ---------- */
 const VIEW_HISTORY = [];
 const NAV_TAB_OF_VIEW = {
   "welcome-view": "welcome",
   "recommend-view": "recommend",
   "favorites-view": "favorites",
+  "admin-view": "admin",
   "season-view": "season",
   "agri-view": "agri",
   "india-map-view": "india-map",
@@ -151,6 +168,17 @@ window.addEventListener("popstate", (e) => {
 function goWelcome() { navigate("welcome-view"); currentSeason = null; currentCrop = null; }
 function goRecommend() { navigate("recommend-view"); currentSeason = null; currentCrop = null; }
 function goFavorites() { renderFavorites(); navigate("favorites-view"); currentSeason = null; currentCrop = null; }
+function goAdmin() {
+  const pass = prompt("Enter Admin Password (Default: admin123):");
+  if (pass === "admin123") {
+    renderAdminCustomCrops();
+    navigate("admin-view");
+    currentSeason = null;
+    currentCrop = null;
+  } else if (pass !== null) {
+    alert("❌ Incorrect Password!");
+  }
+}
 function goSeasons() { navigate("season-view"); currentSeason = null; currentCrop = null; }
 function goIndiaMap() { navigate("india-map-view"); currentSeason = null; currentCrop = null; }
 function goAgri() { navigate("agri-view"); currentSeason = null; currentCrop = null; }
@@ -179,6 +207,7 @@ function updateCrumb() {
     const labels = {
       "recommend-view": "Smart Finder",
       "favorites-view": "Favorites",
+      "admin-view": "Admin Dashboard",
       "season-view": "Seasons",
       "india-map-view": "India Crop Map",
       "agri-view": "Agriculture & Festivals",
@@ -268,6 +297,86 @@ function renderFavorites() {
       </div>`;
     grid.appendChild(card);
   });
+}
+
+/* ---------- ADMIN DASHBOARD SYSTEM ---------- */
+function getCustomCrops() {
+  const custom = localStorage.getItem('customCrops');
+  return custom ? JSON.parse(custom) : [];
+}
+
+function renderAdminCustomCrops() {
+  const tbody = document.getElementById('adminCustomCropsTable');
+  if (!tbody) return;
+
+  const custom = getCustomCrops();
+  tbody.innerHTML = '';
+
+  if (custom.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 20px; color:#888;">No custom crops added by admin yet.</td></tr>`;
+    return;
+  }
+
+  custom.forEach((crop, index) => {
+    const tr = document.createElement('tr');
+    tr.style.borderBottom = '1px solid #eef3f0';
+    tr.innerHTML = `
+      <td style="padding: 10px 14px; font-weight: 600; color: #173a30;">${escapeHtml(crop.name)} (${crop.hindi || ''})</td>
+      <td style="padding: 10px 14px; text-transform: capitalize;">${crop.season}</td>
+      <td style="padding: 10px 14px; color: #555;">${escapeHtml(crop.soil || 'Loamy')}</td>
+      <td style="padding: 10px 14px; text-align: right;">
+        <button onclick="deleteCustomCrop(${index})" style="padding: 6px 12px; background: #ff4757; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">🗑️ Delete</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function deleteCustomCrop(index) {
+  if (!confirm("Are you sure you want to delete this crop?")) return;
+  let custom = getCustomCrops();
+  const deleted = custom.splice(index, 1)[0];
+
+  localStorage.setItem('customCrops', JSON.stringify(custom));
+
+  if (deleted && CROPS[deleted.season]) {
+    CROPS[deleted.season] = CROPS[deleted.season].filter(c => c.name !== deleted.name);
+  }
+
+  renderAdminCustomCrops();
+}
+
+function initAdminPanel() {
+  const form = document.getElementById('addCropForm');
+  if (!form) return;
+
+  form.onsubmit = (e) => {
+    e.preventDefault();
+
+    const name = document.getElementById('adminCropName').value.trim();
+    const hindi = document.getElementById('adminCropHindi').value.trim();
+    const wiki = document.getElementById('adminCropWiki').value.trim() || name;
+    const season = document.getElementById('adminCropSeason').value;
+    const rain = document.getElementById('adminCropRain').value.trim() || '50-100 cm';
+    const soil = document.getElementById('adminCropSoil').value.trim() || 'Loamy soil';
+    const img = document.getElementById('adminCropImg').value.trim() || 'assets/images/summer-bg.png';
+    const region = document.getElementById('adminCropRegion').value.trim() || 'Across India';
+    const desc = document.getElementById('adminCropDesc').value.trim();
+
+    const newCrop = { name, hindi, wiki, season, rain, soil, img, region, desc };
+
+    let custom = getCustomCrops();
+    custom.unshift(newCrop);
+    localStorage.setItem('customCrops', JSON.stringify(custom));
+
+    if (CROPS[season]) {
+      CROPS[season].unshift(newCrop);
+    }
+
+    alert(`🎉 Successfully added "${name}" to ${season.toUpperCase()} crops!`);
+    form.reset();
+    renderAdminCustomCrops();
+  };
 }
 
 /* ---------- India Map Filtering ---------- */
@@ -434,7 +543,6 @@ function renderCropDetail(season, crop) {
   if ($("#detail-season-full")) $("#detail-season-full").innerHTML = `${m.icon} ${m.label} Season<br><span style="font-weight:400;opacity:.8;font-size:.92rem">${m.tagline} (${m.month})</span>`;
   if ($("#detail-back-bottom")) $("#detail-back-bottom").onclick = () => goCrops(season);
 
-  // Initialize farmer discussion & reviews system for this crop
   initCropReviewSystem(crop.name);
 }
 
@@ -702,6 +810,7 @@ function init() {
     return;
   }
   CROPS = CROP_DATA;
+  mergeCustomCrops();
 
   renderSeasons();
   renderFestivals();
@@ -733,6 +842,7 @@ function init() {
       if (nav === "welcome") goWelcome();
       else if (nav === "recommend") goRecommend();
       else if (nav === "favorites") goFavorites();
+      else if (nav === "admin") goAdmin();
       else if (nav === "season") goSeasons();
       else if (nav === "agri") goAgri();
       else if (nav === "india-map") goIndiaMap();
@@ -742,13 +852,12 @@ function init() {
   // Brand logo
   if ($("#home-btn")) $("#home-btn").onclick = () => goWelcome();
 
-  // Recommend view bottom buttons
+  // Bottom Nav Back Buttons
   if ($("#rec-back-welcome")) $("#rec-back-welcome").onclick = () => goWelcome();
   if ($("#rec-go-seasons")) $("#rec-go-seasons").onclick = () => goSeasons();
-
-  // Favorites view bottom buttons
   if ($("#fav-back-welcome")) $("#fav-back-welcome").onclick = () => goWelcome();
   if ($("#fav-go-seasons")) $("#fav-go-seasons").onclick = () => goSeasons();
+  if ($("#admin-back-welcome")) $("#admin-back-welcome").onclick = () => goWelcome();
 
   // India map page
   if ($("#map-back-welcome")) $("#map-back-welcome").onclick = () => goWelcome();
@@ -773,6 +882,7 @@ function init() {
   initCropRecommender();
   initWeatherWidget();
   initMandiPrices();
+  initAdminPanel();
 
   history.replaceState({ view: "welcome-view" }, "", location.pathname + location.search);
 

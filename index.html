@@ -71,6 +71,7 @@
         <button class="nav-link active" data-nav="welcome">Home</button>
         <button class="nav-link" data-nav="recommend">🌱 Smart Finder</button>
         <button class="nav-link" data-nav="favorites">❤️ Favorites</button>
+        <button class="nav-link" data-nav="admin">⚙️ Admin</button>
         <button class="nav-link" data-nav="season">Seasons</button>
         <button class="nav-link" data-nav="agri">Festivals</button>
         <button class="nav-link" data-nav="india-map">India Map</button>
@@ -297,6 +298,100 @@
       <div class="map-bottom-nav">
         <button class="btn" id="fav-back-welcome">← Back to Home</button>
         <button class="btn btn-primary" id="fav-go-seasons">Browse All Seasons →</button>
+      </div>
+    </section>
+
+    <!-- ADMIN DASHBOARD VIEW: Admin ke dwara nayi crops add ya delete karne ka system -->
+    <section class="view" id="admin-view">
+      <div class="section-head">
+        <div class="eyebrow">Control Center</div>
+        <h2>⚙️ Admin Dashboard / फसल प्रबंधन</h2>
+        <p>Add new crops or delete existing custom entries from the system.</p>
+      </div>
+
+      <div style="max-width: 1000px; margin: 20px auto; padding: 26px; background: #ffffff; border-radius: 18px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+        <h3 style="color: #173a30; font-size: 1.3rem; margin-bottom: 18px;">➕ Add New Crop (नयी फसल जोड़ें)</h3>
+        
+        <form id="addCropForm" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+          <div>
+            <label style="font-weight: 600; font-size: 0.88rem; color: #173a30;">Crop Name (English)*</label>
+            <input type="text" id="adminCropName" placeholder="e.g. Sunflower" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1.5px solid #dcdcdc; outline: none; margin-top: 4px;">
+          </div>
+
+          <div>
+            <label style="font-weight: 600; font-size: 0.88rem; color: #173a30;">Crop Name (Hindi)</label>
+            <input type="text" id="adminCropHindi" placeholder="e.g. सूरजमुखी" style="width: 100%; padding: 10px; border-radius: 8px; border: 1.5px solid #dcdcdc; outline: none; margin-top: 4px;">
+          </div>
+
+          <div>
+            <label style="font-weight: 600; font-size: 0.88rem; color: #173a30;">Scientific Name</label>
+            <input type="text" id="adminCropWiki" placeholder="e.g. Helianthus annuus" style="width: 100%; padding: 10px; border-radius: 8px; border: 1.5px solid #dcdcdc; outline: none; margin-top: 4px;">
+          </div>
+
+          <div>
+            <label style="font-weight: 600; font-size: 0.88rem; color: #173a30;">Season*</label>
+            <select id="adminCropSeason" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1.5px solid #dcdcdc; outline: none; margin-top: 4px; background: #fff;">
+              <option value="summer">☀️ Summer (Zaid)</option>
+              <option value="winter">❄️ Winter (Rabi)</option>
+              <option value="rain">🌧️ Rain (Kharif)</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="font-weight: 600; font-size: 0.88rem; color: #173a30;">Rainfall Required</label>
+            <input type="text" id="adminCropRain" placeholder="e.g. 50-75 cm" style="width: 100%; padding: 10px; border-radius: 8px; border: 1.5px solid #dcdcdc; outline: none; margin-top: 4px;">
+          </div>
+
+          <div>
+            <label style="font-weight: 600; font-size: 0.88rem; color: #173a30;">Soil Type</label>
+            <input type="text" id="adminCropSoil" placeholder="e.g. Well-drained loamy soil" style="width: 100%; padding: 10px; border-radius: 8px; border: 1.5px solid #dcdcdc; outline: none; margin-top: 4px;">
+          </div>
+
+          <div style="grid-column: 1/-1;">
+            <label style="font-weight: 600; font-size: 0.88rem; color: #173a30;">Image URL</label>
+            <input type="url" id="adminCropImg" placeholder="https://example.com/image.jpg" style="width: 100%; padding: 10px; border-radius: 8px; border: 1.5px solid #dcdcdc; outline: none; margin-top: 4px;">
+          </div>
+
+          <div style="grid-column: 1/-1;">
+            <label style="font-weight: 600; font-size: 0.88rem; color: #173a30;">Growing Regions</label>
+            <input type="text" id="adminCropRegion" placeholder="e.g. Karnataka, Maharashtra, Andhra Pradesh" style="width: 100%; padding: 10px; border-radius: 8px; border: 1.5px solid #dcdcdc; outline: none; margin-top: 4px;">
+          </div>
+
+          <div style="grid-column: 1/-1;">
+            <label style="font-weight: 600; font-size: 0.88rem; color: #173a30;">Description*</label>
+            <textarea id="adminCropDesc" rows="3" placeholder="Brief description about the crop..." required style="width: 100%; padding: 10px; border-radius: 8px; border: 1.5px solid #dcdcdc; outline: none; margin-top: 4px; resize: vertical;"></textarea>
+          </div>
+
+          <div style="grid-column: 1/-1;">
+            <button type="submit" style="padding: 12px 28px; background: #16382c; color: #ffd36b; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 1rem;">
+              🚀 Add Crop to System
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Custom Added Crops List Table -->
+      <div style="max-width: 1000px; margin: 30px auto; padding: 26px; background: #ffffff; border-radius: 18px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+        <h3 style="color: #173a30; font-size: 1.3rem; margin-bottom: 16px;">📜 Admin Added Custom Crops</h3>
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.92rem;">
+            <thead>
+              <tr style="background: #f0f7f4; color: #173a30;">
+                <th style="padding: 10px 14px;">Crop Name</th>
+                <th style="padding: 10px 14px;">Season</th>
+                <th style="padding: 10px 14px;">Soil Type</th>
+                <th style="padding: 10px 14px; text-align: right;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="adminCustomCropsTable">
+              <!-- Custom crops JS se render honge -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="map-bottom-nav">
+        <button class="btn" id="admin-back-welcome">← Back to Home</button>
       </div>
     </section>
 
