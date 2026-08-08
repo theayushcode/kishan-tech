@@ -1,6 +1,6 @@
 /* ============================================================
    KISHAN - TECH — Application Logic
-   Views: welcome -> recommend -> favorites -> admin -> india-map -> agri -> season-select -> crops-list -> crop-detail
+   Views: welcome -> recommend -> favorites -> admin -> helpline -> calculator -> india-map -> agri -> season-select -> crops-list -> crop-detail
    ============================================================ */
 
 const SEASON_META = {
@@ -105,6 +105,8 @@ const NAV_TAB_OF_VIEW = {
   "recommend-view": "recommend",
   "favorites-view": "favorites",
   "admin-view": "admin",
+  "helpline-view": "helpline",
+  "calculator-view": "calculator",
   "season-view": "season",
   "agri-view": "agri",
   "india-map-view": "india-map",
@@ -179,6 +181,8 @@ function goAdmin() {
     alert("❌ Incorrect Password!");
   }
 }
+function goHelpline() { navigate("helpline-view"); currentSeason = null; currentCrop = null; }
+function goCalculator() { navigate("calculator-view"); currentSeason = null; currentCrop = null; }
 function goSeasons() { navigate("season-view"); currentSeason = null; currentCrop = null; }
 function goIndiaMap() { navigate("india-map-view"); currentSeason = null; currentCrop = null; }
 function goAgri() { navigate("agri-view"); currentSeason = null; currentCrop = null; }
@@ -208,6 +212,8 @@ function updateCrumb() {
       "recommend-view": "Smart Finder",
       "favorites-view": "Favorites",
       "admin-view": "Admin Dashboard",
+      "helpline-view": "Kisan Helpline",
+      "calculator-view": "Fertilizer Calculator",
       "season-view": "Seasons",
       "india-map-view": "India Crop Map",
       "agri-view": "Agriculture & Festivals",
@@ -749,6 +755,50 @@ function initMandiPrices() {
   }
 }
 
+/* ---------- FERTILIZER & SEED CALCULATOR LOGIC ---------- */
+const CROP_REQUIREMENTS_PER_ACRE = {
+  wheat:   { seed: 40, urea: 65, dap: 50, potash: 20 },
+  rice:    { seed: 10, urea: 70, dap: 40, potash: 25 },
+  maize:   { seed: 8,  urea: 80, dap: 50, potash: 30 },
+  cotton:  { seed: 2.5, urea: 90, dap: 45, potash: 30 },
+  mustard: { seed: 2.5, urea: 45, dap: 30, potash: 15 },
+  potato:  { seed: 1200, urea: 100, dap: 80, potash: 60 }
+};
+
+function initFertilizerCalculator() {
+  const form = document.getElementById('agriCalcForm');
+  const resultsBox = document.getElementById('calcResults');
+
+  if (!form) return;
+
+  form.onsubmit = (e) => {
+    e.preventDefault();
+
+    const cropKey = document.getElementById('calcCrop').value;
+    const landValue = parseFloat(document.getElementById('calcLandValue').value);
+    const unit = document.getElementById('calcLandUnit').value;
+
+    if (isNaN(landValue) || landValue <= 0) return;
+
+    // Convert land area into Acres
+    let acres = landValue;
+    if (unit === 'bigha') {
+      acres = landValue / 4.8;
+    } else if (unit === 'hectare') {
+      acres = landValue * 2.471;
+    }
+
+    const req = CROP_REQUIREMENTS_PER_ACRE[cropKey] || { seed: 10, urea: 50, dap: 30, potash: 20 };
+
+    document.getElementById('resSeed').textContent = (req.seed * acres).toFixed(1) + ' kg';
+    document.getElementById('resUrea').textContent = (req.urea * acres).toFixed(1) + ' kg';
+    document.getElementById('resDap').textContent = (req.dap * acres).toFixed(1) + ' kg';
+    document.getElementById('resPotash').textContent = (req.potash * acres).toFixed(1) + ' kg';
+
+    resultsBox.style.display = 'block';
+  };
+}
+
 /* ---------- Background Music ---------- */
 function initMusic() {
   const audio = $("#bg-music");
@@ -843,6 +893,8 @@ function init() {
       else if (nav === "recommend") goRecommend();
       else if (nav === "favorites") goFavorites();
       else if (nav === "admin") goAdmin();
+      else if (nav === "helpline") goHelpline();
+      else if (nav === "calculator") goCalculator();
       else if (nav === "season") goSeasons();
       else if (nav === "agri") goAgri();
       else if (nav === "india-map") goIndiaMap();
@@ -858,6 +910,8 @@ function init() {
   if ($("#fav-back-welcome")) $("#fav-back-welcome").onclick = () => goWelcome();
   if ($("#fav-go-seasons")) $("#fav-go-seasons").onclick = () => goSeasons();
   if ($("#admin-back-welcome")) $("#admin-back-welcome").onclick = () => goWelcome();
+  if ($("#helpline-back-welcome")) $("#helpline-back-welcome").onclick = () => goWelcome();
+  if ($("#calc-back-welcome")) $("#calc-back-welcome").onclick = () => goWelcome();
 
   // India map page
   if ($("#map-back-welcome")) $("#map-back-welcome").onclick = () => goWelcome();
@@ -883,6 +937,7 @@ function init() {
   initWeatherWidget();
   initMandiPrices();
   initAdminPanel();
+  initFertilizerCalculator();
 
   history.replaceState({ view: "welcome-view" }, "", location.pathname + location.search);
 

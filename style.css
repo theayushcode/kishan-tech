@@ -39,13 +39,14 @@ a { color: inherit; text-decoration: none; }
 .brand-bar {
   position: fixed; top: 0; left: 0; right: 0; z-index: 50;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 26px;
-  background: rgba(8, 30, 26, .78);
+  padding: 10px 20px;
+  background: rgba(8, 30, 26, .88);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   color: #fff;
   transition: background var(--transition);
-  gap: 16px;
+  gap: 12px;
+  flex-wrap: wrap; /* 👈 Allows wrapping onto multiple lines smoothly */
 }
 .brand-bar .brand {
   display: flex; align-items: center; gap: 12px;
@@ -72,22 +73,24 @@ a { color: inherit; text-decoration: none; }
 
 /* ----------  Top navigation tabs  ---------- */
 .top-nav {
-  display: flex; align-items: center; gap: 4px;
+  display: flex; align-items: center; gap: 6px;
   background: rgba(255,255,255,.08);
   border: 1px solid rgba(255,255,255,.15);
   border-radius: 999px;
   padding: 5px;
+  flex-wrap: wrap; /* 👈 Allows navigation buttons to wrap cleanly into 2 lines */
+  justify-content: center;
 }
 .nav-link {
   position: relative;
-  padding: 8px 18px; border-radius: 999px;
+  padding: 6px 14px; border-radius: 999px;
   color: rgba(255,255,255,.82); font-family: var(--font-head);
-  font-weight: 600; font-size: .92rem; cursor: pointer;
+  font-weight: 600; font-size: .88rem; cursor: pointer;
   transition: color var(--transition), background var(--transition), transform var(--transition);
-  white-space: nowrap;
+  white-space: nowrap; /* 👈 Prevents text cutting or breaking inside buttons */
 }
 .nav-link:hover { color: #fff; background: rgba(255,255,255,.12); transform: translateY(-1px); }
-/* Active tab — highlighted colour (no new page created) */
+/* Active tab — highlighted colour */
 .nav-link.active {
   color: #14302a;
   background: linear-gradient(120deg, #ffd36b, #7bd66f);
@@ -105,14 +108,14 @@ a { color: inherit; text-decoration: none; }
   .brand-bar { flex-wrap: wrap; padding: 10px 16px; }
   .brand-bar .crumb { display: none; }
   .top-nav { order: 3; width: 100%; justify-content: center; }
-  .nav-link { padding: 7px 12px; font-size: .85rem; }
+  .nav-link { padding: 6px 10px; font-size: .82rem; }
 }
 
 /* ----------  Views  ---------- */
 .view {
   position: relative;
   min-height: 100vh;
-  padding-top: 70px;
+  padding-top: 85px; /* Adjusted padding to accommodate multi-line header */
   display: none;
   animation: fadeIn .5s ease both;
 }
@@ -135,14 +138,14 @@ a { color: inherit; text-decoration: none; }
   flex-direction: column;
   align-items: stretch;
   text-align: center;
-  padding-top: 70px;
+  padding-top: 85px;
 }
 #welcome-view.active { display: flex; }
 
 /* Part 1 — hero welcome note */
 .welcome-part-1 {
   position: relative;
-  min-height: calc(100vh - 70px);
+  min-height: calc(100vh - 85px);
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   padding: 40px 24px 30px;
@@ -436,7 +439,6 @@ a { color: inherit; text-decoration: none; }
 .crop-card .crop-desc {
   margin-top: 10px;
   font-size: .82rem; color: #46605a; line-height: 1.5;
-  /* Show a few lines, then clamp — keeps cards tidy & makes the list scroll */
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;

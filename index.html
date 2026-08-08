@@ -72,6 +72,7 @@
         <button class="nav-link" data-nav="recommend">🌱 Smart Finder</button>
         <button class="nav-link" data-nav="favorites">❤️ Favorites</button>
         <button class="nav-link" data-nav="admin">⚙️ Admin</button>
+        <button class="nav-link" data-nav="calculator">🧮 Calculator</button>
         <button class="nav-link" data-nav="season">Seasons</button>
         <button class="nav-link" data-nav="agri">Festivals</button>
         <button class="nav-link" data-nav="india-map">India Map</button>
@@ -392,6 +393,94 @@
 
       <div class="map-bottom-nav">
         <button class="btn" id="admin-back-welcome">← Back to Home</button>
+      </div>
+    </section>
+
+    <!-- FERTILIZER & SEED CALCULATOR VIEW (STEP 3) -->
+    <section class="view" id="calculator-view">
+      <div class="section-head">
+        <div class="eyebrow">Smart Agri Tools</div>
+        <h2>🧮 Fertilizer & Seed Calculator / खाद और बीज कैलकुलेटर</h2>
+        <p>Calculate the exact amount of Seeds, Urea, DAP, and Potash needed for your field size.</p>
+      </div>
+
+      <div style="max-width: 900px; margin: 20px auto; padding: 26px; background: #ffffff; border-radius: 18px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+        <form id="agriCalcForm" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; align-items: end;">
+          
+          <div>
+            <label style="font-weight: 700; font-size: 0.9rem; color: #173a30;">Select Crop / फसल चुनिए:*</label>
+            <select id="calcCrop" required style="width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #e2ebe6; margin-top: 6px; font-size: 0.95rem; outline: none; background: #f6faf8;">
+              <option value="wheat">🌾 Wheat (गेहूं)</option>
+              <option value="rice">🌾 Rice / Paddy (धान)</option>
+              <option value="maize">🌽 Maize (मक्का)</option>
+              <option value="cotton">🧶 Cotton (कपास)</option>
+              <option value="mustard">🌼 Mustard (सरसों)</option>
+              <option value="potato">🥔 Potato (आलू)</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="font-weight: 700; font-size: 0.9rem; color: #173a30;">Land Size / खेत का आकार:*</label>
+            <input type="number" id="calcLandValue" step="0.1" min="0.1" placeholder="e.g. 2.5" required style="width: 100%; padding: 11px; border-radius: 10px; border: 2px solid #e2ebe6; margin-top: 6px; font-size: 0.95rem; outline: none; background: #f6faf8;">
+          </div>
+
+          <div>
+            <label style="font-weight: 700; font-size: 0.9rem; color: #173a30;">Land Unit / इकाई:*</label>
+            <select id="calcLandUnit" required style="width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #e2ebe6; margin-top: 6px; font-size: 0.95rem; outline: none; background: #f6faf8;">
+              <option value="acre">Acre (एकड़)</option>
+              <option value="bigha">Bigha (बीघा - 1 Acre = 4.8 Bigha)</option>
+              <option value="hectare">Hectare (हेक्टेयर)</option>
+            </select>
+          </div>
+
+          <div style="grid-column: 1/-1;">
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 13px; font-size: 1rem;">
+              🧮 Calculate Requirement / आवश्यकता निकालें
+            </button>
+          </div>
+
+        </form>
+
+        <!-- Calculation Results Cards Container -->
+        <div id="calcResults" style="margin-top: 30px; display: none;">
+          <h3 style="color: #173a30; font-size: 1.2rem; margin-bottom: 15px; border-left: 4px solid #2e8b57; padding-left: 10px;">
+            📋 Required Material for your field (आवश्यक सामग्री):
+          </h3>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;">
+            <div style="background: #f0f7f4; padding: 16px; border-radius: 12px; border: 1px solid #d4e8e1;">
+              <div style="font-size: 1.8rem; margin-bottom: 4px;">🌱</div>
+              <div style="font-size: 0.85rem; color: #5d716a; font-weight: 600;">Seed Quantity (बीज)</div>
+              <div id="resSeed" style="font-size: 1.4rem; font-weight: 800; color: #173a30; margin-top: 4px;">-- kg</div>
+            </div>
+
+            <div style="background: #fff8eb; padding: 16px; border-radius: 12px; border: 1px solid #ffe3c2;">
+              <div style="font-size: 1.8rem; margin-bottom: 4px;">🧪</div>
+              <div style="font-size: 0.85rem; color: #8a621c; font-weight: 600;">Urea (यूरिया)</div>
+              <div id="resUrea" style="font-size: 1.4rem; font-weight: 800; color: #8a621c; margin-top: 4px;">-- kg</div>
+            </div>
+
+            <div style="background: #f3f6ff; padding: 16px; border-radius: 12px; border: 1px solid #d0dcff;">
+              <div style="font-size: 1.8rem; margin-bottom: 4px;">📦</div>
+              <div style="font-size: 0.85rem; color: #2e4a8b; font-weight: 600;">DAP (डीएपी)</div>
+              <div id="resDap" style="font-size: 1.4rem; font-weight: 800; color: #2e4a8b; margin-top: 4px;">-- kg</div>
+            </div>
+
+            <div style="background: #fef2f2; padding: 16px; border-radius: 12px; border: 1px solid #fecaca;">
+              <div style="font-size: 1.8rem; margin-bottom: 4px;">🧱</div>
+              <div style="font-size: 0.85rem; color: #991b1b; font-weight: 600;">MOP / Potash (पोटाश)</div>
+              <div id="resPotash" style="font-size: 1.4rem; font-weight: 800; color: #991b1b; margin-top: 4px;">-- kg</div>
+            </div>
+          </div>
+          
+          <p style="font-size: 0.82rem; color: #777; margin-top: 15px; font-style: italic;">
+            *Note: Rates are based on standard recommended ICAR dosages per acre. Adjust based on local soil testing reports.
+          </p>
+        </div>
+      </div>
+
+      <div class="map-bottom-nav">
+        <button class="btn" id="calc-back-welcome">← Back to Home</button>
       </div>
     </section>
 
